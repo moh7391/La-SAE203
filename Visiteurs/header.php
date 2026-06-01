@@ -10,6 +10,7 @@
   <header>
     <nav>
       <a href="index.php">Accueil</a>
-      <a href="connexion.php">Connexion</a>
+      <a href="inscription.php">S'inscrire</a>
+      <a href="mon-espace.php">Mon inscription</a>
     </nav>
   </header>
