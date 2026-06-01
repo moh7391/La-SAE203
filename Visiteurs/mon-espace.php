@@ -26,7 +26,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         $req = mysqli_prepare($CONNEXION, "SELECT id_participant, prenom FROM participant WHERE email = ?");
         mysqli_stmt_bind_param($req, "s", $email);
         mysqli_stmt_execute($req);
-        $p = mysqli_fetch_assoc(mysqli_stmt_get_result($req));
+        $resultat = mysqli_stmt_get_result($req);
+        $p = mysqli_fetch_assoc($resultat);
 
         if ($p) {
             $_SESSION['participant_id']     = $p['id_participant'];
@@ -66,14 +67,16 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
              GROUP BY c.id_creneau, c.jauge");
         mysqli_stmt_bind_param($req, "i", $nouveauCreneau);
         mysqli_stmt_execute($req);
-        $info = mysqli_fetch_assoc(mysqli_stmt_get_result($req));
+        $resultat = mysqli_stmt_get_result($req);
+        $info = mysqli_fetch_assoc($resultat);
 
         // 2) Est-il deja inscrit a ce nouveau creneau ?
         $req = mysqli_prepare($CONNEXION,
             "SELECT id_inscription FROM inscription WHERE id_creneau = ? AND id_participant = ?");
         mysqli_stmt_bind_param($req, "ii", $nouveauCreneau, $idParticipant);
         mysqli_stmt_execute($req);
-        $dejaInscrit = mysqli_fetch_assoc(mysqli_stmt_get_result($req));
+        $resultat = mysqli_stmt_get_result($req);
+        $dejaInscrit = mysqli_fetch_assoc($resultat);
 
         if (!$info) {
             $message = "Créneau invalide.";

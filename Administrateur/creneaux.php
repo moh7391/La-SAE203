@@ -75,7 +75,8 @@ if (($_GET['action'] ?? '') === 'edit') {
     $req = mysqli_prepare($CONNEXION, "SELECT * FROM creneau WHERE id_creneau = ?");
     mysqli_stmt_bind_param($req, "i", $id);
     mysqli_stmt_execute($req);
-    $creneauEdit = mysqli_fetch_assoc(mysqli_stmt_get_result($req));
+    $resultat = mysqli_stmt_get_result($req);
+    $creneauEdit = mysqli_fetch_assoc($resultat);
 }
 
 // ---------------------------------------------------------------------

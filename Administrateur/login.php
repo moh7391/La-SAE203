@@ -29,7 +29,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             "SELECT id_admin, mot_de_passe, nom FROM administrateur WHERE login = ?");
         mysqli_stmt_bind_param($req, "s", $login);
         mysqli_stmt_execute($req);
-        $admin = mysqli_fetch_assoc(mysqli_stmt_get_result($req));
+        $resultat = mysqli_stmt_get_result($req);
+        $admin = mysqli_fetch_assoc($resultat);
 
         // password_verify compare le mot de passe saisi au hash stocke.
         if ($admin && password_verify($mdp, $admin['mot_de_passe'])) {

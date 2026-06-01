@@ -20,7 +20,8 @@ $sql = "SELECT p.nom, p.prenom, p.email,
 $req = mysqli_prepare($CONNEXION, $sql);
 mysqli_stmt_bind_param($req, "i", $idInscription);
 mysqli_stmt_execute($req);
-$info = mysqli_fetch_assoc(mysqli_stmt_get_result($req));
+$resultat = mysqli_stmt_get_result($req);
+$info = mysqli_fetch_assoc($resultat);
 
 require_once 'header.php';
 ?>

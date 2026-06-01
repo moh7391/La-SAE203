@@ -64,7 +64,8 @@ if (($_GET['action'] ?? '') === 'edit') {
     $req = mysqli_prepare($CONNEXION, "SELECT * FROM salle WHERE id_salle = ?");
     mysqli_stmt_bind_param($req, "i", $id);
     mysqli_stmt_execute($req);
-    $salleEdit = mysqli_fetch_assoc(mysqli_stmt_get_result($req));
+    $resultat = mysqli_stmt_get_result($req);
+    $salleEdit = mysqli_fetch_assoc($resultat);
 }
 
 // Liste des salles (avec nombre de creneaux rattaches, pour info)

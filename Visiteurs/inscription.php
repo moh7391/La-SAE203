@@ -51,7 +51,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         $req = mysqli_prepare($CONNEXION, $sql);
         mysqli_stmt_bind_param($req, "i", $creneauChoisi);
         mysqli_stmt_execute($req);
-        $infoCreneau = mysqli_fetch_assoc(mysqli_stmt_get_result($req));
+        $resultat = mysqli_stmt_get_result($req);
+        $infoCreneau = mysqli_fetch_assoc($resultat);
 
         if (!$infoCreneau) {
             $erreurs[] = "Le créneau choisi n'existe pas.";
@@ -65,7 +66,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         $req = mysqli_prepare($CONNEXION, "SELECT id_participant FROM participant WHERE email = ?");
         mysqli_stmt_bind_param($req, "s", $email);
         mysqli_stmt_execute($req);
-        $participant = mysqli_fetch_assoc(mysqli_stmt_get_result($req));
+        $resultat = mysqli_stmt_get_result($req);
+        $participant = mysqli_fetch_assoc($resultat);
 
         if ($participant) {
             $idParticipant = $participant['id_participant'];
@@ -75,7 +77,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                 "SELECT id_inscription FROM inscription WHERE id_creneau = ? AND id_participant = ?");
             mysqli_stmt_bind_param($req, "ii", $creneauChoisi, $idParticipant);
             mysqli_stmt_execute($req);
-            if (mysqli_fetch_assoc(mysqli_stmt_get_result($req))) {
+            $resultat = mysqli_stmt_get_result($req);
+            $dejaInscrit = mysqli_fetch_assoc($resultat);
+            if ($dejaInscrit) {
                 $erreurs[] = "Cette adresse e-mail est déjà inscrite à ce créneau.";
             }
         } else {
