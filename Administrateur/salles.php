@@ -1,7 +1,7 @@
 <?php
 // =====================================================================
-//  salles.php  -  CRUD des salles (espace admin protege).
-//  Lister / Creer / Modifier / Supprimer une salle.
+//  salles.php  -  Gestion des salles par l'administrateur.
+//  On peut : lister, ajouter, modifier et supprimer une salle.
 // =====================================================================
 
 require_once 'verif.php';
@@ -9,58 +9,49 @@ require_once 'connexion.php';
 
 $message = "";
 
-// ---------------------------------------------------------------------
-//  TRAITEMENT DES ACTIONS (POST)
-// ---------------------------------------------------------------------
+// ---------- AJOUT / MODIFICATION / SUPPRESSION (POST) ----------
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
 
     $action = $_POST['action'] ?? '';
 
-    // --- SUPPRESSION ---
+    // --- Supprimer ---
     if ($action === 'supprimer') {
-        $id = (int) ($_POST['id_salle'] ?? 0);
+        $id = (int) $_POST['id_salle'];
         $req = mysqli_prepare($CONNEXION, "DELETE FROM salle WHERE id_salle = ?");
         mysqli_stmt_bind_param($req, "i", $id);
-        // Echoue si des creneaux ou des elements sont lies a la salle (cle etrangere).
         if (@mysqli_stmt_execute($req)) {
-            $message = "Salle supprimée.";
+            $message = "Salle supprimee.";
         } else {
-            $message = "Impossible de supprimer : des créneaux (ou éléments) utilisent cette salle.";
+            $message = "Suppression impossible : des creneaux utilisent cette salle.";
         }
     }
 
-    // --- CREATION / MODIFICATION ---
-    if ($action === 'creer' || $action === 'modifier') {
-        $nom         = trim($_POST['nom_salle'] ?? '');
-        $description = trim($_POST['description'] ?? '');
+    // --- Ajouter ou modifier ---
+    if ($action === 'ajouter' || $action === 'modifier') {
+        $nom         = trim($_POST['nom_salle']);
+        $description = trim($_POST['description']);
 
         if ($nom === '') {
             $message = "Le nom de la salle est obligatoire.";
-        } else {
-            if ($action === 'creer') {
-                $req = mysqli_prepare($CONNEXION,
-                    "INSERT INTO salle (nom_salle, description) VALUES (?, ?)");
-                mysqli_stmt_bind_param($req, "ss", $nom, $description);
-                mysqli_stmt_execute($req);
-                $message = "Salle créée.";
-            } else { // modifier
-                $id = (int) ($_POST['id_salle'] ?? 0);
-                $req = mysqli_prepare($CONNEXION,
-                    "UPDATE salle SET nom_salle = ?, description = ? WHERE id_salle = ?");
-                mysqli_stmt_bind_param($req, "ssi", $nom, $description, $id);
-                mysqli_stmt_execute($req);
-                $message = "Salle modifiée.";
-            }
+        } elseif ($action === 'ajouter') {
+            $req = mysqli_prepare($CONNEXION, "INSERT INTO salle (nom_salle, description) VALUES (?, ?)");
+            mysqli_stmt_bind_param($req, "ss", $nom, $description);
+            mysqli_stmt_execute($req);
+            $message = "Salle ajoutee.";
+        } else { // modifier
+            $id = (int) $_POST['id_salle'];
+            $req = mysqli_prepare($CONNEXION, "UPDATE salle SET nom_salle = ?, description = ? WHERE id_salle = ?");
+            mysqli_stmt_bind_param($req, "ssi", $nom, $description, $id);
+            mysqli_stmt_execute($req);
+            $message = "Salle modifiee.";
         }
     }
 }
 
-// ---------------------------------------------------------------------
-//  MODE EDITION : ?action=edit&id=
-// ---------------------------------------------------------------------
+// ---------- MODE MODIFICATION : salles.php?modifier=3 ----------
 $salleEdit = null;
-if (($_GET['action'] ?? '') === 'edit') {
-    $id = (int) ($_GET['id'] ?? 0);
+if (isset($_GET['modifier'])) {
+    $id = (int) $_GET['modifier'];
     $req = mysqli_prepare($CONNEXION, "SELECT * FROM salle WHERE id_salle = ?");
     mysqli_stmt_bind_param($req, "i", $id);
     mysqli_stmt_execute($req);
@@ -68,13 +59,8 @@ if (($_GET['action'] ?? '') === 'edit') {
     $salleEdit = mysqli_fetch_assoc($resultat);
 }
 
-// Liste des salles (avec nombre de creneaux rattaches, pour info)
-$sql = "SELECT s.id_salle, s.nom_salle, s.description, COUNT(c.id_creneau) AS nb_creneaux
-        FROM salle s
-        LEFT JOIN creneau c ON c.id_salle = s.id_salle
-        GROUP BY s.id_salle, s.nom_salle, s.description
-        ORDER BY s.nom_salle";
-$salles = mysqli_query($CONNEXION, $sql);
+// ---------- LISTE DES SALLES (requete simple) ----------
+$salles = mysqli_query($CONNEXION, "SELECT * FROM salle ORDER BY nom_salle");
 ?>
 <!doctype html>
 <html lang="fr">
@@ -86,8 +72,8 @@ $salles = mysqli_query($CONNEXION, $sql);
 </head>
 <body>
   <header>
-    <p>Connecté en tant que <strong><?= htmlspecialchars($_SESSION['admin_nom']) ?></strong>
-       — <a href="accueil.php">Tableau de bord</a> — <a href="deconnexion.php">Se déconnecter</a></p>
+    <p>Connecte : <strong><?= htmlspecialchars($_SESSION['admin_nom']) ?></strong>
+       — <a href="accueil.php">Tableau de bord</a> — <a href="deconnexion.php">Se deconnecter</a></p>
   </header>
 
   <main>
@@ -98,11 +84,16 @@ $salles = mysqli_query($CONNEXION, $sql);
     <?php endif; ?>
 
     <section>
-      <h2><?= $salleEdit ? "Modifier la salle" : "Ajouter une salle" ?></h2>
+      <?php if ($salleEdit) : ?>
+        <h2>Modifier la salle</h2>
+      <?php else : ?>
+        <h2>Ajouter une salle</h2>
+      <?php endif; ?>
+
       <form action="salles.php" method="post">
-        <input type="hidden" name="action" value="<?= $salleEdit ? 'modifier' : 'creer' ?>">
+        <input type="hidden" name="action" value="<?= $salleEdit ? 'modifier' : 'ajouter' ?>">
         <?php if ($salleEdit) : ?>
-          <input type="hidden" name="id_salle" value="<?= (int) $salleEdit['id_salle'] ?>">
+          <input type="hidden" name="id_salle" value="<?= $salleEdit['id_salle'] ?>">
         <?php endif; ?>
 
         <p>
@@ -114,12 +105,7 @@ $salles = mysqli_query($CONNEXION, $sql);
           <label for="description">Description</label><br>
           <textarea id="description" name="description" rows="3" cols="40"><?= htmlspecialchars($salleEdit['description'] ?? '') ?></textarea>
         </p>
-        <p>
-          <button type="submit"><?= $salleEdit ? "Enregistrer les modifications" : "Ajouter" ?></button>
-          <?php if ($salleEdit) : ?>
-            <a href="salles.php">Annuler</a>
-          <?php endif; ?>
-        </p>
+        <p><button type="submit">Enregistrer</button></p>
       </form>
     </section>
 
@@ -131,7 +117,6 @@ $salles = mysqli_query($CONNEXION, $sql);
           <tr>
             <th scope="col">Nom</th>
             <th scope="col">Description</th>
-            <th scope="col">Créneaux</th>
             <th scope="col">Actions</th>
           </tr>
         </thead>
@@ -139,14 +124,13 @@ $salles = mysqli_query($CONNEXION, $sql);
           <?php while ($s = mysqli_fetch_assoc($salles)) : ?>
             <tr>
               <td><?= htmlspecialchars($s['nom_salle']) ?></td>
-              <td><?= htmlspecialchars($s['description'] ?? '') ?></td>
-              <td><?= (int) $s['nb_creneaux'] ?></td>
+              <td><?= htmlspecialchars($s['description']) ?></td>
               <td>
-                <a href="salles.php?action=edit&amp;id=<?= (int) $s['id_salle'] ?>">Modifier</a>
-                <form action="salles.php" method="post" style="display:inline"
+                <a href="salles.php?modifier=<?= $s['id_salle'] ?>">Modifier</a>
+                <form action="salles.php" method="post"
                       onsubmit="return confirm('Supprimer cette salle ?');">
                   <input type="hidden" name="action" value="supprimer">
-                  <input type="hidden" name="id_salle" value="<?= (int) $s['id_salle'] ?>">
+                  <input type="hidden" name="id_salle" value="<?= $s['id_salle'] ?>">
                   <button type="submit">Supprimer</button>
                 </form>
               </td>
