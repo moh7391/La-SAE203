@@ -1,66 +1,61 @@
 <?php
-// =====================================================================
-//  index.php  -  Page d'accueil (public) : liste des creneaux.
-//  Pour chaque creneau : date, horaires, salle, places restantes
-//  (= jauge - nombre d'inscriptions) et un lien pour s'inscrire.
-// =====================================================================
+// Page d'accueil : liste des creneaux avec le nombre de places restantes.
 
 require_once 'connexion.php';
 
-// Requete : on relie creneau + salle, et on compte les inscriptions
-// pour calculer les places restantes. LEFT JOIN pour garder les
-// creneaux sans aucune inscription (COUNT = 0).
-$sql = "SELECT c.id_creneau, c.date_creneau, c.heure_debut, c.heure_fin,
-               s.nom_salle, c.jauge,
-               (c.jauge - COUNT(i.id_inscription)) AS places_restantes
-        FROM creneau c
-        JOIN salle s ON s.id_salle = c.id_salle
-        LEFT JOIN inscription i ON i.id_creneau = c.id_creneau
-        GROUP BY c.id_creneau, c.date_creneau, c.heure_debut, c.heure_fin, s.nom_salle, c.jauge
-        ORDER BY c.date_creneau, c.heure_debut, s.nom_salle";
-$creneaux = mysqli_query($CONNEXION, $sql);
+// On recupere tous les creneaux avec le nom de leur salle.
+$creneaux = mysqli_query($CONNEXION,
+    "SELECT creneau.*, salle.nom_salle
+     FROM creneau
+     JOIN salle ON salle.id_salle = creneau.id_salle
+     ORDER BY date_creneau, heure_debut");
 
 require_once 'header.php';
 ?>
 
   <main>
-    <h1>Créneaux d'inscription à l'exposition</h1>
-    <p>Choisissez un créneau disponible puis cliquez sur « S'inscrire ».</p>
+    <h1>Creneaux d'inscription a l'exposition</h1>
+    <p>Choisissez un creneau puis cliquez sur "S'inscrire".</p>
 
     <table>
-      <caption>Liste des créneaux et places restantes</caption>
-      <thead>
+      <caption>Liste des creneaux</caption>
+      <tr>
+        <th>Date</th>
+        <th>Horaire</th>
+        <th>Salle</th>
+        <th>Places restantes</th>
+        <th>Action</th>
+      </tr>
+
+      <?php
+      // Pour chaque creneau, on compte ses inscrits pour calculer les places restantes.
+      while ($c = mysqli_fetch_assoc($creneaux)) {
+
+          $res = mysqli_query($CONNEXION,
+              "SELECT COUNT(*) AS nb FROM inscription WHERE id_creneau = " . $c['id_creneau']);
+          $compte = mysqli_fetch_assoc($res);
+
+          $places = $c['jauge'] - $compte['nb'];
+
+          // On met la date et les heures dans un format lisible.
+          $date = date('d/m/Y', strtotime($c['date_creneau']));
+          $debut = substr($c['heure_debut'], 0, 5);
+          $fin = substr($c['heure_fin'], 0, 5);
+      ?>
         <tr>
-          <th scope="col">Date</th>
-          <th scope="col">Horaire</th>
-          <th scope="col">Salle</th>
-          <th scope="col">Places restantes</th>
-          <th scope="col">Action</th>
+          <td><?php echo htmlspecialchars($date); ?></td>
+          <td><?php echo htmlspecialchars($debut . " a " . $fin); ?></td>
+          <td><?php echo htmlspecialchars($c['nom_salle']); ?></td>
+          <td><?php echo $places; ?> / <?php echo $c['jauge']; ?></td>
+          <td>
+            <?php if ($places > 0) { ?>
+              <a href="inscription.php?id_creneau=<?php echo $c['id_creneau']; ?>">S'inscrire</a>
+            <?php } else { ?>
+              Complet
+            <?php } ?>
+          </td>
         </tr>
-      </thead>
-      <tbody>
-        <?php while ($c = mysqli_fetch_assoc($creneaux)) : ?>
-          <?php
-            $dateFr = date('d/m/Y', strtotime($c['date_creneau']));
-            $hDebut = substr($c['heure_debut'], 0, 5);
-            $hFin   = substr($c['heure_fin'], 0, 5);
-            $complet = ($c['places_restantes'] <= 0);
-          ?>
-          <tr>
-            <td><?= htmlspecialchars($dateFr) ?></td>
-            <td><?= htmlspecialchars("$hDebut à $hFin") ?></td>
-            <td><?= htmlspecialchars($c['nom_salle']) ?></td>
-            <td><?= (int) $c['places_restantes'] ?> / <?= (int) $c['jauge'] ?></td>
-            <td>
-              <?php if ($complet) : ?>
-                <span>Complet</span>
-              <?php else : ?>
-                <a href="inscription.php?id_creneau=<?= (int) $c['id_creneau'] ?>">S'inscrire</a>
-              <?php endif; ?>
-            </td>
-          </tr>
-        <?php endwhile; ?>
-      </tbody>
+      <?php } ?>
     </table>
   </main>
 

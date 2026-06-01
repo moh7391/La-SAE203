@@ -1,96 +1,70 @@
 <?php
-// =====================================================================
-//  mon-espace.php  -  Le visiteur retrouve ses inscriptions avec son
-//  email (sans mot de passe), puis peut changer de creneau ou annuler.
-//  L'email est garde en session le temps de la visite.
-// =====================================================================
+// Le visiteur retrouve ses inscriptions avec son email, puis peut
+// changer de creneau ou annuler. (Pas de mot de passe : version simple.)
 
 session_start();
 require_once 'connexion.php';
 
 $message = "";
 
-// ---------- ACTIONS (POST) ----------
-if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] == "POST") {
 
-    $action = $_POST['action'] ?? '';
+    $action = $_POST['action'];
 
-    // --- Se connecter : on cherche le participant par son email ---
-    if ($action === 'connexion') {
-        $email = trim($_POST['email']);
-        $req = mysqli_prepare($CONNEXION, "SELECT id_participant, prenom FROM participant WHERE email = ?");
-        mysqli_stmt_bind_param($req, "s", $email);
-        mysqli_stmt_execute($req);
-        $resultat = mysqli_stmt_get_result($req);
-        $participant = mysqli_fetch_assoc($resultat);
+    // Se connecter : on cherche le participant par son email.
+    if ($action == "connexion") {
+        $email = mysqli_real_escape_string($CONNEXION, $_POST['email']);
+        $res = mysqli_query($CONNEXION,
+            "SELECT id_participant, prenom FROM participant WHERE email = '$email'");
+        $participant = mysqli_fetch_assoc($res);
 
         if ($participant) {
-            $_SESSION['participant_id']     = $participant['id_participant'];
+            $_SESSION['participant_id'] = $participant['id_participant'];
             $_SESSION['participant_prenom'] = $participant['prenom'];
         } else {
             $message = "Aucune inscription trouvee pour cet e-mail.";
         }
     }
 
-    // --- Se deconnecter ---
-    if ($action === 'deconnexion') {
+    // Se deconnecter.
+    if ($action == "deconnexion") {
         session_destroy();
         header("Location: mon-espace.php");
         exit;
     }
 
-    // --- Annuler une de ses inscriptions ---
-    if ($action === 'annuler' && isset($_SESSION['participant_id'])) {
+    // Annuler une inscription.
+    if ($action == "annuler" && isset($_SESSION['participant_id'])) {
         $idInscription = (int) $_POST['id_inscription'];
-        // "AND id_participant = ?" : on ne peut annuler que SES propres inscriptions.
-        $req = mysqli_prepare($CONNEXION,
-            "DELETE FROM inscription WHERE id_inscription = ? AND id_participant = ?");
-        mysqli_stmt_bind_param($req, "ii", $idInscription, $_SESSION['participant_id']);
-        mysqli_stmt_execute($req);
+        $idParticipant = (int) $_SESSION['participant_id'];
+        // On ajoute "AND id_participant" pour qu'on ne puisse annuler que SES inscriptions.
+        mysqli_query($CONNEXION,
+            "DELETE FROM inscription
+             WHERE id_inscription = $idInscription AND id_participant = $idParticipant");
         $message = "Inscription annulee.";
     }
 
-    // --- Changer le creneau d'une inscription ---
-    if ($action === 'modifier' && isset($_SESSION['participant_id'])) {
-        $idInscription  = (int) $_POST['id_inscription'];
+    // Changer le creneau d'une inscription.
+    if ($action == "modifier" && isset($_SESSION['participant_id'])) {
+        $idInscription = (int) $_POST['id_inscription'];
         $nouveauCreneau = (int) $_POST['nouveau_creneau'];
-        // On change le creneau (uniquement pour SES inscriptions).
-        $req = mysqli_prepare($CONNEXION,
-            "UPDATE inscription SET id_creneau = ? WHERE id_inscription = ? AND id_participant = ?");
-        mysqli_stmt_bind_param($req, "iii", $nouveauCreneau, $idInscription, $_SESSION['participant_id']);
-        mysqli_stmt_execute($req);
-        $message = "Creneau modifie.";
+        $idParticipant = (int) $_SESSION['participant_id'];
+
+        // On verifie d'abord que le nouveau creneau n'est pas complet.
+        $res = mysqli_query($CONNEXION, "SELECT jauge FROM creneau WHERE id_creneau = $nouveauCreneau");
+        $creneau = mysqli_fetch_assoc($res);
+        $res = mysqli_query($CONNEXION, "SELECT COUNT(*) AS nb FROM inscription WHERE id_creneau = $nouveauCreneau");
+        $compte = mysqli_fetch_assoc($res);
+
+        if ($compte['nb'] >= $creneau['jauge']) {
+            $message = "Ce creneau est complet.";
+        } else {
+            mysqli_query($CONNEXION,
+                "UPDATE inscription SET id_creneau = $nouveauCreneau
+                 WHERE id_inscription = $idInscription AND id_participant = $idParticipant");
+            $message = "Creneau modifie.";
+        }
     }
-}
-
-// ---------- DONNEES A AFFICHER (si connecte) ----------
-$mesInscriptions = null;
-$creneauxDispo   = null;
-
-if (isset($_SESSION['participant_id'])) {
-
-    // Les inscriptions du participant.
-    $req = mysqli_prepare($CONNEXION,
-        "SELECT i.id_inscription, c.date_creneau, c.heure_debut, c.heure_fin, s.nom_salle
-         FROM inscription i
-         JOIN creneau c ON c.id_creneau = i.id_creneau
-         JOIN salle s   ON s.id_salle   = c.id_salle
-         WHERE i.id_participant = ?
-         ORDER BY c.date_creneau, c.heure_debut");
-    mysqli_stmt_bind_param($req, "i", $_SESSION['participant_id']);
-    mysqli_stmt_execute($req);
-    $mesInscriptions = mysqli_stmt_get_result($req);
-
-    // Les creneaux qui ont encore de la place (pour le menu "changer de creneau").
-    $creneauxDispo = mysqli_query($CONNEXION,
-        "SELECT c.id_creneau, c.date_creneau, c.heure_debut, c.heure_fin, s.nom_salle,
-                (c.jauge - COUNT(i.id_inscription)) AS places
-         FROM creneau c
-         JOIN salle s ON s.id_salle = c.id_salle
-         LEFT JOIN inscription i ON i.id_creneau = c.id_creneau
-         GROUP BY c.id_creneau, c.date_creneau, c.heure_debut, c.heure_fin, s.nom_salle, c.jauge
-         HAVING places > 0
-         ORDER BY c.date_creneau, c.heure_debut, s.nom_salle");
 }
 
 require_once 'header.php';
@@ -99,11 +73,12 @@ require_once 'header.php';
   <main>
     <h1>Mon inscription</h1>
 
-    <?php if ($message !== '') : ?>
-      <p role="status"><strong><?= htmlspecialchars($message) ?></strong></p>
-    <?php endif; ?>
+    <?php if ($message != "") { ?>
+      <p><strong><?php echo htmlspecialchars($message); ?></strong></p>
+    <?php } ?>
 
-    <?php if (!isset($_SESSION['participant_id'])) : ?>
+    <?php if (!isset($_SESSION['participant_id'])) { ?>
+
       <!-- Pas connecte : on demande l'email -->
       <p>Saisissez l'adresse e-mail utilisee lors de votre inscription.</p>
       <form action="mon-espace.php" method="post">
@@ -115,61 +90,74 @@ require_once 'header.php';
         <p><button type="submit">Retrouver mon inscription</button></p>
       </form>
 
-    <?php else : ?>
-      <!-- Connecte : on affiche ses inscriptions -->
-      <p>Bonjour <strong><?= htmlspecialchars($_SESSION['participant_prenom']) ?></strong>.</p>
+    <?php } else {
+
+        // On recupere les inscriptions du participant connecte.
+        $idParticipant = (int) $_SESSION['participant_id'];
+        $mesInscriptions = mysqli_query($CONNEXION,
+            "SELECT inscription.id_inscription, creneau.date_creneau, creneau.heure_debut,
+                    creneau.heure_fin, salle.nom_salle
+             FROM inscription
+             JOIN creneau ON creneau.id_creneau = inscription.id_creneau
+             JOIN salle ON salle.id_salle = creneau.id_salle
+             WHERE inscription.id_participant = $idParticipant
+             ORDER BY creneau.date_creneau, creneau.heure_debut");
+    ?>
+
+      <p>Bonjour <strong><?php echo htmlspecialchars($_SESSION['participant_prenom']); ?></strong>.</p>
       <form action="mon-espace.php" method="post">
         <input type="hidden" name="action" value="deconnexion">
         <button type="submit">Me deconnecter</button>
       </form>
 
-      <?php if (mysqli_num_rows($mesInscriptions) == 0) : ?>
+      <?php if (mysqli_num_rows($mesInscriptions) == 0) { ?>
         <p>Vous n'avez aucune inscription. <a href="inscription.php">S'inscrire</a></p>
-      <?php else : ?>
-        <?php while ($ins = mysqli_fetch_assoc($mesInscriptions)) : ?>
-          <?php
-            $date = date('d/m/Y', strtotime($ins['date_creneau']));
-            $debut = substr($ins['heure_debut'], 0, 5);
-            $fin   = substr($ins['heure_fin'], 0, 5);
-          ?>
-          <section>
-            <h2><?= htmlspecialchars("$date - $debut a $fin - {$ins['nom_salle']}") ?></h2>
+      <?php } else {
 
-            <!-- Changer de creneau -->
-            <form action="mon-espace.php" method="post">
-              <input type="hidden" name="action" value="modifier">
-              <input type="hidden" name="id_inscription" value="<?= $ins['id_inscription'] ?>">
-              <p>
-                <label for="c<?= $ins['id_inscription'] ?>">Changer de creneau :</label><br>
-                <select id="c<?= $ins['id_inscription'] ?>" name="nouveau_creneau" required>
-                  <option value="">-- Choisir --</option>
-                  <?php
-                    // On remet le pointeur au debut de la liste des creneaux pour chaque inscription.
-                    mysqli_data_seek($creneauxDispo, 0);
-                    while ($cd = mysqli_fetch_assoc($creneauxDispo)) :
-                      $d = date('d/m/Y', strtotime($cd['date_creneau']));
-                      $hd = substr($cd['heure_debut'], 0, 5);
-                      $hf = substr($cd['heure_fin'], 0, 5);
-                      $texte = "$d - $hd a $hf - {$cd['nom_salle']} ({$cd['places']} places)";
-                  ?>
-                    <option value="<?= $cd['id_creneau'] ?>"><?= htmlspecialchars($texte) ?></option>
-                  <?php endwhile; ?>
-                </select>
-              </p>
-              <p><button type="submit">Modifier</button></p>
-            </form>
+          while ($ins = mysqli_fetch_assoc($mesInscriptions)) {
+              $date = date('d/m/Y', strtotime($ins['date_creneau']));
+              $debut = substr($ins['heure_debut'], 0, 5);
+              $fin = substr($ins['heure_fin'], 0, 5);
+      ?>
+        <section>
+          <h2><?php echo htmlspecialchars("$date - $debut a $fin - " . $ins['nom_salle']); ?></h2>
 
-            <!-- Annuler -->
-            <form action="mon-espace.php" method="post"
-                  onsubmit="return confirm('Annuler cette inscription ?');">
-              <input type="hidden" name="action" value="annuler">
-              <input type="hidden" name="id_inscription" value="<?= $ins['id_inscription'] ?>">
-              <p><button type="submit">Annuler</button></p>
-            </form>
-          </section>
-        <?php endwhile; ?>
-      <?php endif; ?>
-    <?php endif; ?>
+          <!-- Changer de creneau -->
+          <form action="mon-espace.php" method="post">
+            <input type="hidden" name="action" value="modifier">
+            <input type="hidden" name="id_inscription" value="<?php echo $ins['id_inscription']; ?>">
+            <label for="c<?php echo $ins['id_inscription']; ?>">Changer de creneau :</label><br>
+            <select id="c<?php echo $ins['id_inscription']; ?>" name="nouveau_creneau" required>
+              <option value="">-- Choisir --</option>
+              <?php
+              // Liste des creneaux disponibles.
+              $liste = mysqli_query($CONNEXION,
+                  "SELECT creneau.*, salle.nom_salle
+                   FROM creneau
+                   JOIN salle ON salle.id_salle = creneau.id_salle
+                   ORDER BY date_creneau, heure_debut");
+              while ($cd = mysqli_fetch_assoc($liste)) {
+                  $d = date('d/m/Y', strtotime($cd['date_creneau']));
+                  $hd = substr($cd['heure_debut'], 0, 5);
+                  $hf = substr($cd['heure_fin'], 0, 5);
+                  $texte = "$d - $hd a $hf - " . $cd['nom_salle'];
+              ?>
+                <option value="<?php echo $cd['id_creneau']; ?>"><?php echo htmlspecialchars($texte); ?></option>
+              <?php } ?>
+            </select>
+            <button type="submit">Modifier</button>
+          </form>
+
+          <!-- Annuler -->
+          <form action="mon-espace.php" method="post" onsubmit="return confirm('Annuler cette inscription ?');">
+            <input type="hidden" name="action" value="annuler">
+            <input type="hidden" name="id_inscription" value="<?php echo $ins['id_inscription']; ?>">
+            <button type="submit">Annuler</button>
+          </form>
+        </section>
+      <?php }
+        }
+      } ?>
   </main>
 
 <?php require_once 'footer.php'; ?>
