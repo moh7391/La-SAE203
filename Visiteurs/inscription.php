@@ -1,32 +1,26 @@
 <?php
-// Formulaire d'inscription a un creneau.
 
 require_once 'connexion.php';
 
 $erreur = "";
 
-// On regarde si un creneau est deja choisi (depuis la page d'accueil).
 $creneauChoisi = 0;
 if (isset($_GET['id_creneau'])) {
     $creneauChoisi = (int) $_GET['id_creneau'];
 }
 
-// Quand le visiteur envoie le formulaire :
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
 
-    // On recupere les donnees. Textes -> mysqli_real_escape_string. Nombre -> (int).
     $nom = mysqli_real_escape_string($CONNEXION, $_POST['nom']);
     $prenom = mysqli_real_escape_string($CONNEXION, $_POST['prenom']);
     $email = mysqli_real_escape_string($CONNEXION, $_POST['email']);
     $telephone = mysqli_real_escape_string($CONNEXION, $_POST['telephone']);
     $creneauChoisi = (int) $_POST['id_creneau'];
 
-    // Verification : tous les champs importants doivent etre remplis.
     if ($nom == "" || $prenom == "" || $email == "" || $creneauChoisi == 0) {
         $erreur = "Merci de remplir tous les champs.";
     } else {
 
-        // 1) Est-ce que le creneau est complet ?
         $res = mysqli_query($CONNEXION,
             "SELECT jauge FROM creneau WHERE id_creneau = $creneauChoisi");
         $creneau = mysqli_fetch_assoc($res);
@@ -39,7 +33,6 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             $erreur = "Desole, ce creneau est complet.";
         } else {
 
-            // 2) Est-ce que ce participant existe deja (meme email) ?
             $res = mysqli_query($CONNEXION,
                 "SELECT id_participant FROM participant WHERE email = '$email'");
             $participant = mysqli_fetch_assoc($res);
@@ -54,7 +47,6 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                 $idParticipant = mysqli_insert_id($CONNEXION);
             }
 
-            // 3) Est-ce qu'il est deja inscrit a ce creneau ?
             $res = mysqli_query($CONNEXION,
                 "SELECT id_inscription FROM inscription
                  WHERE id_creneau = $creneauChoisi AND id_participant = $idParticipant");
