@@ -1,11 +1,3 @@
--- =====================================================================
---  Base complete pour OVH (structure + donnees).
---  A coller dans l'onglet SQL de phpMyAdmin OVH, APRES avoir selectionne
---  ta base "ijtebowcompte17" dans la colonne de gauche.
---  Pas de "USE" ni de "CREATE DATABASE" : on travaille dans la base OVH.
---  Noms de tables en minuscules (important sur le serveur Linux d'OVH).
--- =====================================================================
-
 SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS inscription;

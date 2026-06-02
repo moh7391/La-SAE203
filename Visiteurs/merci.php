@@ -1,53 +1,65 @@
 <?php
-// Page de confirmation affichee apres une inscription reussie.
-
 require_once 'connexion.php';
+require_once 'eillusion-data.php';
 
-// On recupere le numero de l'inscription dans l'adresse (merci.php?id=...).
-$id = 0;
-if (isset($_GET['id'])) {
-    $id = (int) $_GET['id'];
-}
+$id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
-// On va chercher les details de cette inscription.
 $res = mysqli_query($CONNEXION,
-    "SELECT participant.nom, participant.prenom, participant.email,
+    "SELECT inscription.id_inscription, participant.nom, participant.prenom, participant.email,
             creneau.date_creneau, creneau.heure_debut, creneau.heure_fin,
-            salle.nom_salle
+            salle.id_salle, salle.nom_salle
      FROM inscription
      JOIN participant ON participant.id_participant = inscription.id_participant
      JOIN creneau ON creneau.id_creneau = inscription.id_creneau
      JOIN salle ON salle.id_salle = creneau.id_salle
      WHERE inscription.id_inscription = $id");
-$info = mysqli_fetch_assoc($res);
+$info = $res ? mysqli_fetch_assoc($res) : null;
 
+$active_page = 'inscription';
+$page_title = eillusion_page_title('Réservation confirmée');
 require_once 'header.php';
 ?>
-
-  <main>
-    <h1>Confirmation d'inscription</h1>
-
+<main class="confirmation">
+  <div class="container">
     <?php if (!$info) { ?>
-      <p>Inscription introuvable.</p>
-      <p><a href="inscription.php">Retour au formulaire</a></p>
+      <h1 class="pixel-title page">Inscription introuvable</h1>
+      <p class="lead" style="margin-left:auto;margin-right:auto;">Le récapitulatif demandé n'existe pas ou a été supprimé.</p>
+      <p><a href="inscription.php" class="btn">Retour au formulaire</a></p>
     <?php } else {
-        $date = date('d/m/Y', strtotime($info['date_creneau']));
-        $debut = substr($info['heure_debut'], 0, 5);
-        $fin = substr($info['heure_fin'], 0, 5);
+        $code = eillusion_reservation_code($info['id_inscription']);
+        $codeSalle = eillusion_code_from_db_salle($CONNEXION, $info['id_salle']);
     ?>
-      <p>Merci <strong><?php echo htmlspecialchars($info['prenom'] . " " . $info['nom']); ?></strong>,
-         votre inscription est enregistree.</p>
+      <div class="check-icon">✓</div>
+      <h1 class="pixel-title medium">C'est confirmé !</h1>
+      <p>Un récapitulatif a été envoyé à <strong><?php echo e($info['email']); ?></strong>.</p>
 
-      <h2>Recapitulatif</h2>
-      <ul>
-        <li>Date : <?php echo htmlspecialchars($date); ?></li>
-        <li>Horaire : <?php echo htmlspecialchars($debut . " a " . $fin); ?></li>
-        <li>Salle : <?php echo htmlspecialchars($info['nom_salle']); ?></li>
-        <li>E-mail : <?php echo htmlspecialchars($info['email']); ?></li>
-      </ul>
+      <div class="confirm-card">
+        <span class="eyebrow">Code de réservation</span>
+        <div class="confirm-code"><?php echo e($code); ?></div>
 
-      <p><a href="index.php">Retour a l'accueil</a></p>
+        <div class="recap-grid">
+          <div>
+            <span>Salle</span>
+            <strong><?php echo e($codeSalle); ?></strong>
+          </div>
+          <div>
+            <span>Personnes</span>
+            <strong>1</strong>
+          </div>
+          <div>
+            <span>Date</span>
+            <strong><?php echo e(eillusion_date_label($info['date_creneau'])); ?></strong>
+          </div>
+          <div>
+            <span>Créneau</span>
+            <strong><?php echo e(eillusion_heure($info['heure_debut'])); ?></strong>
+          </div>
+        </div>
+      </div>
+
+      <p>Conservez votre code pour modifier ou supprimer votre réservation depuis la rubrique « Ma réservation ».</p>
+      <p><a href="index.php" class="btn">Retour à l'accueil</a></p>
     <?php } ?>
-  </main>
-
+  </div>
+</main>
 <?php require_once 'footer.php'; ?>

@@ -1,62 +1,61 @@
 <?php
-// Page d'accueil : liste des creneaux avec le nombre de places restantes.
-
 require_once 'connexion.php';
+require_once 'eillusion-data.php';
 
-// On recupere tous les creneaux avec le nom de leur salle.
-$creneaux = mysqli_query($CONNEXION,
-    "SELECT creneau.*, salle.nom_salle
-     FROM creneau
-     JOIN salle ON salle.id_salle = creneau.id_salle
-     ORDER BY date_creneau, heure_debut");
-
+$active_page = 'accueil';
+$page_title = eillusion_page_title('Accueil');
 require_once 'header.php';
+$salles = eillusion_salles();
 ?>
+<main>
+  <section class="hero">
+    <div class="container">
+      <div class="capsule">Exposition MMI1 · 18–19 juin 2026</div>
+      <h1 class="pixel-title big">E-LLUSION</h1>
+      <h2>L’exposition immersive des étudiant·es MMI1</h2>
+      <p>Quatre salles, quatre univers, une illusion totale. Préparez-vous à douter de ce que vous voyez.</p>
+      <div class="hero-actions">
+        <a href="inscription.php" class="btn">Réserver mon créneau</a>
+        <a href="salles.php" class="btn outline">Découvrir les salles</a>
+      </div>
+    </div>
+  </section>
 
-  <main>
-    <h1>Creneaux d'inscription a l'exposition</h1>
-    <p>Choisissez un creneau puis cliquez sur "S'inscrire".</p>
+  <section class="concept" id="concept">
+    <div class="container concept-grid">
+      <div>
+        <p class="eyebrow">Le concept</p>
+        <h2 class="pixel-title medium">Quand le réel....</h2>
+        <p>Voici une zone de texte qui présente rapidement l'exposition. Chaque salle est une agence MMI, un univers singulier conçu de A à Z par des étudiant·es passionné·es de design, de code et de narration.</p>
+        <p>À travers la lumière, les reflets, le glitch et la réalité augmentée, E-LLUSION propose un parcours immersif où la perception devient un terrain de jeu.</p>
+      </div>
+      <div class="concept-visual" aria-hidden="true">
+        <div class="eye"></div>
+      </div>
+    </div>
+  </section>
 
-    <table>
-      <caption>Liste des creneaux</caption>
-      <tr>
-        <th>Date</th>
-        <th>Horaire</th>
-        <th>Salle</th>
-        <th>Places restantes</th>
-        <th>Action</th>
-      </tr>
+  <section class="rooms-home">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">4 salles, 4 univers</p>
+          <h2 class="pixel-title medium">Les salles</h2>
+        </div>
+        <a href="salles.php" class="section-link">Voir toutes les salles →</a>
+      </div>
 
-      <?php
-      // Pour chaque creneau, on compte ses inscrits pour calculer les places restantes.
-      while ($c = mysqli_fetch_assoc($creneaux)) {
-
-          $res = mysqli_query($CONNEXION,
-              "SELECT COUNT(*) AS nb FROM inscription WHERE id_creneau = " . $c['id_creneau']);
-          $compte = mysqli_fetch_assoc($res);
-
-          $places = $c['jauge'] - $compte['nb'];
-
-          // On met la date et les heures dans un format lisible.
-          $date = date('d/m/Y', strtotime($c['date_creneau']));
-          $debut = substr($c['heure_debut'], 0, 5);
-          $fin = substr($c['heure_fin'], 0, 5);
-      ?>
-        <tr>
-          <td><?php echo htmlspecialchars($date); ?></td>
-          <td><?php echo htmlspecialchars($debut . " a " . $fin); ?></td>
-          <td><?php echo htmlspecialchars($c['nom_salle']); ?></td>
-          <td><?php echo $places; ?> / <?php echo $c['jauge']; ?></td>
-          <td>
-            <?php if ($places > 0) { ?>
-              <a href="inscription.php?id_creneau=<?php echo $c['id_creneau']; ?>">S'inscrire</a>
-            <?php } else { ?>
-              Complet
-            <?php } ?>
-          </td>
-        </tr>
-      <?php } ?>
-    </table>
-  </main>
-
+      <div class="room-grid">
+        <?php foreach ($salles as $salle) { ?>
+          <article class="room-card">
+            <div class="room-number"><?php echo e($salle['code']); ?></div>
+            <h3><?php echo e($salle['titre']); ?></h3>
+            <p><?php echo e($salle['resume']); ?></p>
+            <a href="salle.php?code=<?php echo e($salle['code']); ?>" class="text-link teal">Découvrir →</a>
+          </article>
+        <?php } ?>
+      </div>
+    </div>
+  </section>
+</main>
 <?php require_once 'footer.php'; ?>
