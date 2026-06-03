@@ -4,7 +4,6 @@
 require_once 'verif.php';
 require_once 'connexion.php';
 require_once 'eillusion-data.php';
-require_once 'admin-layout.php';
 
 $nbCreneaux = (int) mysqli_fetch_assoc(mysqli_query($CONNEXION, "SELECT COUNT(*) AS total FROM creneau"))['total'];
 $nbInscriptions = (int) mysqli_fetch_assoc(mysqli_query($CONNEXION, "SELECT COUNT(*) AS total FROM inscription"))['total'];
@@ -31,7 +30,9 @@ $dernieres = mysqli_query($CONNEXION,
      ORDER BY inscription.id_inscription DESC
      LIMIT 4");
 
-admin_page_start('Tableau de bord', 'dashboard');
+$page_title = 'Tableau de bord - E-LLUSION admin';
+$active_page = 'dashboard';
+include 'header.php';
 ?>
 <main class="admin-main">
   <section class="admin-page-head">
@@ -96,4 +97,4 @@ admin_page_start('Tableau de bord', 'dashboard');
     </div>
   </section>
 </main>
-<?php admin_footer(); ?>
+<?php include 'footer.php'; ?>

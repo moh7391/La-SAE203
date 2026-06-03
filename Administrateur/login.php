@@ -3,7 +3,6 @@
 
 session_start();
 require_once 'connexion.php';
-require_once 'admin-layout.php';
 
 if (isset($_SESSION['admin_id'])) {
     header("Location: accueil.php");
@@ -28,19 +27,12 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 
     $erreur = "Identifiants incorrects.";
 }
+
+$page_title = 'Connexion administrateur - E-LLUSION';
+$body_class = 'login-page';
+$admin_show_nav = false;
+include 'header.php';
 ?>
-<!doctype html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Connexion administrateur - E-LLUSION</title>
-  <link rel="stylesheet" href="admin.css">
-</head>
-<body class="admin-body login-page">
-  <header class="admin-header">
-    <a class="admin-logo" href="login.php">E-LLUSION</a>
-  </header>
 
   <main class="login-shell">
     <section class="admin-card login-card">
@@ -69,4 +61,4 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
     </section>
   </main>
 
-  <?php admin_footer(); ?>
+<?php include 'footer.php'; ?>

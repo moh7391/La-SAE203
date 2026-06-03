@@ -4,7 +4,6 @@
 require_once 'verif.php';
 require_once 'connexion.php';
 require_once 'eillusion-data.php';
-require_once 'admin-layout.php';
 
 $filtreSalle = isset($_GET['salle']) ? (int) $_GET['salle'] : 0;
 $filtreDate = isset($_GET['date']) ? $_GET['date'] : '';
@@ -24,7 +23,9 @@ if ($filtreSalle > 0 || $filtreDate !== '') {
     });
 }
 
-admin_page_start('Gestion des créneaux', 'creneaux');
+$page_title = 'Gestion des creneaux - E-LLUSION admin';
+$active_page = 'creneaux';
+include 'header.php';
 ?>
 <main class="admin-main">
   <section class="admin-page-head">
@@ -102,4 +103,4 @@ admin_page_start('Gestion des créneaux', 'creneaux');
     </div>
   </section>
 </main>
-<?php admin_footer(); ?>
+<?php include 'footer.php'; ?>

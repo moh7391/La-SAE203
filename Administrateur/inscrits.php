@@ -4,7 +4,6 @@
 require_once 'verif.php';
 require_once 'connexion.php';
 require_once 'eillusion-data.php';
-require_once 'admin-layout.php';
 
 $message = "";
 
@@ -46,7 +45,9 @@ $inscrits = mysqli_query($CONNEXION,
      $whereSql
      ORDER BY inscription.id_inscription DESC");
 
-admin_page_start('Liste des inscrits', 'inscrits');
+$page_title = 'Liste des inscrits - E-LLUSION admin';
+$active_page = 'inscrits';
+include 'header.php';
 ?>
 <main class="admin-main">
   <section class="admin-page-head">
@@ -137,4 +138,4 @@ admin_page_start('Liste des inscrits', 'inscrits');
     </div>
   </section>
 </main>
-<?php admin_footer(); ?>
+<?php include 'footer.php'; ?>

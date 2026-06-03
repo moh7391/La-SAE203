@@ -30,16 +30,37 @@ button, input, select { font: inherit; }
 button { cursor: pointer; }
 
 .admin-header {
-  min-height: 108px;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  padding: 26px 40px;
-  border-bottom: 1px solid rgba(0, 0, 0, .12);
+  gap: 12px;
+  padding: 14px 28px;
+  background: var(--admin-white);
+  border-bottom: 1px solid var(--admin-border);
 }
 
 .admin-logo,
+.admin-footer-logo {
+  margin: 0;
+  color: var(--admin-black);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.admin-logo span,
+.admin-footer-logo span {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-left: 4px;
+  border-radius: 50%;
+  background: var(--admin-red);
+}
+
 .admin-title {
   margin: 0;
   color: var(--admin-teal);
@@ -49,29 +70,33 @@ button { cursor: pointer; }
   letter-spacing: 0;
 }
 
-.admin-logo {
-  font-size: 42px;
-  text-transform: uppercase;
-}
-
 .admin-nav {
   display: flex;
-  align-items: center;
-  justify-content: flex-end;
   flex-wrap: wrap;
-  gap: 30px;
-  font-size: 21px;
+  gap: 6px;
+  font-size: 18px;
+  font-weight: 700;
 }
 
-.admin-nav a { white-space: nowrap; }
+.admin-nav a {
+  padding: 8px 14px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
 .admin-nav a:hover,
 .admin-nav a.active {
-  color: var(--admin-teal);
-  font-weight: 700;
+  color: var(--admin-white);
+  background: var(--admin-black);
 }
 
 .admin-nav a.logout {
   color: var(--admin-red);
+}
+
+.admin-nav a.logout:hover {
+  color: var(--admin-white);
+  background: var(--admin-red);
 }
 
 .admin-main {
@@ -442,22 +467,45 @@ button { cursor: pointer; }
 }
 
 .admin-footer {
-  padding: 32px 20px 36px;
   color: var(--admin-white);
   background: var(--admin-black);
-  text-align: center;
+}
+
+.admin-footer-main {
+  width: 90%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+}
+
+.admin-footer-logo {
+  color: var(--admin-white);
+}
+
+.admin-footer h3,
+.admin-footer a:hover {
+  color: var(--admin-teal);
 }
 
 .admin-footer p {
-  margin: 0;
-  font-size: 22px;
+  margin: 10px 0;
 }
 
-.admin-footer small {
-  display: block;
-  margin-top: 14px;
-  color: #bfbfbf;
-  font-size: 18px;
+.admin-footer-bottom {
+  width: 90%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px 0;
+  color: #aaa;
+  border-top: 1px solid #333;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
 }
 
 @media (max-width: 1050px) {
@@ -476,7 +524,8 @@ button { cursor: pointer; }
   .quick-actions,
   .filter-grid,
   .filter-grid.four,
-  .room-grid-admin {
+  .room-grid-admin,
+  .admin-footer-main {
     grid-template-columns: 1fr;
   }
 
@@ -489,7 +538,7 @@ button { cursor: pointer; }
 @media (max-width: 620px) {
   body.admin-body { font-size: 16px; }
   .admin-header { padding: 22px 18px; }
-  .admin-logo { font-size: 32px; }
+  .admin-logo { font-size: 22px; }
   .admin-nav { font-size: 18px; }
   .admin-main { width: min(100% - 24px, 520px); }
   .panel, .filter-card, .login-card { padding: 28px 20px; }

@@ -4,7 +4,6 @@
 require_once 'verif.php';
 require_once 'connexion.php';
 require_once 'eillusion-data.php';
-require_once 'admin-layout.php';
 
 $salles = array();
 $resSalles = mysqli_query($CONNEXION,
@@ -25,7 +24,9 @@ $elements = mysqli_query($CONNEXION,
      JOIN salle ON salle.id_salle = contenir.id_salle
      ORDER BY salle.nom_salle, element_expo.titre");
 
-admin_page_start('Gestion des salles', 'salles');
+$page_title = 'Gestion des salles - E-LLUSION admin';
+$active_page = 'salles';
+include 'header.php';
 ?>
 <main class="admin-main">
   <section class="admin-page-head">
@@ -87,4 +88,4 @@ admin_page_start('Gestion des salles', 'salles');
     </div>
   </section>
 </main>
-<?php admin_footer(); ?>
+<?php include 'footer.php'; ?>
