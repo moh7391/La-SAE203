@@ -15,7 +15,7 @@ function nav_active($nom, $active_page) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?php echo htmlspecialchars($page_title, ENT_QUOTES, 'UTF-8'); ?></title>
-  <link rel="stylesheet" href="css.css">
+  <link rel="stylesheet" href="css.css?v=<?php echo filemtime(__DIR__ . '/css.css'); ?>">
 </head>
 <body>
 <header class="client-header">

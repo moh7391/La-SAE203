@@ -33,7 +33,7 @@ $logo_link = $admin_show_nav ? 'accueil.php' : 'login.php';
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?php echo admin_e($page_title); ?></title>
-  <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="admin.css?v=<?php echo filemtime(__DIR__ . '/admin.css'); ?>">
 </head>
 <body class="<?php echo admin_e($body_class); ?>">
   <header class="admin-header">

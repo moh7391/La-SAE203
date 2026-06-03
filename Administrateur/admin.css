@@ -489,40 +489,108 @@ button { cursor: pointer; }
 }
 
 .admin-footer-main {
-  width: 90%;
-  max-width: 1100px;
+  width: min(100% - 80px, 1360px);
   margin: 0 auto;
-  padding: 40px 0;
+  padding: 46px 0 38px;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 30px;
+  grid-template-columns: 1.25fr 1fr 1fr;
+  gap: 46px;
+  align-items: start;
+}
+
+.admin-footer-section {
+  min-width: 0;
 }
 
 .admin-footer-logo {
   color: var(--admin-white);
 }
 
-.admin-footer h3,
+.admin-footer h3 {
+  margin: 0 0 18px;
+  color: var(--admin-teal);
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+.admin-footer p {
+  margin: 12px 0 18px;
+  font-size: 18px;
+  line-height: 1.45;
+}
+
+.admin-footer-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 6px 16px;
+  color: var(--admin-black);
+  background: var(--admin-teal-soft);
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.admin-footer-links {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-footer-links li {
+  margin: 0;
+  padding: 0;
+}
+
+.admin-footer-links a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: max-content;
+  max-width: 100%;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
 .admin-footer a:hover {
   color: var(--admin-teal);
 }
 
-.admin-footer p {
-  margin: 10px 0;
+.admin-footer-icon {
+  flex: 0 0 34px;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  color: var(--admin-teal);
+  border: 1px solid var(--admin-teal);
+  border-radius: 50%;
+}
+
+.admin-footer-icon svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .admin-footer-bottom {
-  width: 90%;
-  max-width: 1100px;
+  width: min(100% - 80px, 1360px);
   margin: 0 auto;
-  padding: 16px 0;
+  padding: 18px 0;
   color: #aaa;
   border-top: 1px solid #333;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: 12px;
-  font-size: 12px;
+  gap: 16px;
+  font-size: 14px;
 }
 
 @media (max-width: 1050px) {
@@ -549,6 +617,11 @@ button { cursor: pointer; }
   .admin-main {
     width: min(100% - 32px, 720px);
     padding-top: 44px;
+  }
+
+  .admin-footer-main,
+  .admin-footer-bottom {
+    width: min(100% - 32px, 720px);
   }
 }
 

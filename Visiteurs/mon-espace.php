@@ -85,7 +85,7 @@ require_once 'header.php';
         <label for="email">Adresse e-mail</label>
         <input class="input" type="email" id="email" name="email" value="<?php echo e($email); ?>" required>
       </div>
-      <div style="margin-top:16px;">
+      <div class="field-actions">
         <button type="submit" class="btn">Rechercher</button>
       </div>
     </form>
@@ -118,7 +118,7 @@ require_once 'header.php';
                 </option>
               <?php } ?>
             </select>
-            <button type="submit" class="btn" style="margin-top:10px;">Modifier</button>
+            <button type="submit" class="btn btn-spaced">Modifier</button>
           </form>
 
           <!-- Annuler -->
