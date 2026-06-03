@@ -1,5 +1,5 @@
 <?php
-// Page de detail d'une salle : description, oeuvres et creneaux (tout depuis la base).
+// Page de detail d'une salle : nom global + liste des oeuvres + bouton s'inscrire.
 require_once 'connexion.php';
 require_once 'eillusion-data.php';
 
@@ -7,6 +7,7 @@ $idSalle = isset($_GET['id_salle']) ? (int) $_GET['id_salle'] : 0;
 $salle = eillusion_get_salle($CONNEXION, $idSalle);
 
 $active_page = 'salles';
+$page_title = $salle ? eillusion_page_title($salle['nom_salle']) : eillusion_page_title('Salle');
 require_once 'header.php';
 ?>
 <main>
@@ -17,8 +18,8 @@ require_once 'header.php';
       <?php if (!$salle) { ?>
         <h1 class="pixel-title page">Salle introuvable</h1>
       <?php } else {
+          // Les oeuvres de cette salle (tables contenir + element_expo).
           $elements = eillusion_get_elements($CONNEXION, $salle['id_salle']);
-          $creneaux = eillusion_get_creneaux($CONNEXION, $salle['id_salle']);
       ?>
         <p class="eyebrow"><?php echo e($salle['nom_salle']); ?></p>
         <h1 class="pixel-title page"><?php echo e($salle['nom_salle']); ?></h1>
@@ -26,49 +27,20 @@ require_once 'header.php';
 
         <div class="detail-card">
           <h2>Œuvres exposées</h2>
-          <?php if (count($elements) === 0) { ?>
+          <?php if (count($elements) == 0) { ?>
             <p>Aucune œuvre renseignée pour cette salle.</p>
           <?php } else { ?>
             <ul>
               <?php foreach ($elements as $el) { ?>
-                <li><strong><?php echo e($el['titre']); ?></strong> — <?php echo e($el['description']); ?></li>
+                <li><?php echo e($el['titre']); ?></li>
               <?php } ?>
             </ul>
           <?php } ?>
         </div>
 
-        <div class="detail-card">
-          <h2>Créneaux disponibles</h2>
-          <?php if (count($creneaux) === 0) { ?>
-            <p>Aucun créneau pour cette salle.</p>
-          <?php } else { ?>
-            <div class="table-wrap">
-              <table>
-                <caption>Créneaux de <?php echo e($salle['nom_salle']); ?></caption>
-                <tr>
-                  <th>Date</th>
-                  <th>Horaire</th>
-                  <th>Places restantes</th>
-                  <th>Action</th>
-                </tr>
-                <?php foreach ($creneaux as $c) { ?>
-                  <tr>
-                    <td><?php echo e(eillusion_date_courte($c['date_creneau'])); ?></td>
-                    <td><?php echo e(eillusion_heure($c['heure_debut']) . ' à ' . eillusion_heure($c['heure_fin'])); ?></td>
-                    <td><?php echo (int) $c['places_restantes']; ?> / <?php echo (int) $c['jauge']; ?></td>
-                    <td>
-                      <?php if ((int) $c['places_restantes'] > 0) { ?>
-                        <a class="btn" href="inscription.php?id_creneau=<?php echo (int) $c['id_creneau']; ?>">S'inscrire</a>
-                      <?php } else { ?>
-                        <span class="badge light">Complet</span>
-                      <?php } ?>
-                    </td>
-                  </tr>
-                <?php } ?>
-              </table>
-            </div>
-          <?php } ?>
-        </div>
+        <p>
+          <a class="btn" href="inscription.php?id_salle=<?php echo (int) $salle['id_salle']; ?>">S'inscrire</a>
+        </p>
       <?php } ?>
     </div>
   </section>
