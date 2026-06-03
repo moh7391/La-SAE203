@@ -36,7 +36,7 @@ $salles = eillusion_get_salles($CONNEXION);
       <div class="room-grid">
         <?php foreach ($salles as $salle) { ?>
           <article class="room-card">
-            <div class="room-number"><?php echo e($salle['nom_salle']); ?></div>
+            <h3 class="room-number"><?php echo e($salle['nom_salle']); ?></h3>
             <p><?php echo e($salle['description']); ?></p>
             <a href="inscription.php?id_salle=<?php echo (int) $salle['id_salle']; ?>" class="text-link teal">Choisir un créneau →</a>
           </article>
