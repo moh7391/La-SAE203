@@ -5,28 +5,42 @@ require_once 'eillusion-data.php';
 $active_page = 'contact';
 $page_title = eillusion_page_title('Contact');
 require_once 'header.php';
+
+// Les salles viennent de la base (pour faire un referent par salle).
+$salles = eillusion_get_salles($CONNEXION);
 ?>
 <main class="contact-page">
   <section class="container">
     <p class="eyebrow">Contact</p>
     <h1 class="pixel-title page">Une question ?</h1>
-    <p class="lead">Pour toute demande concernant l'exposition E-LLUSION, l'organisation ou un cas particulier, contactez la responsable du projet.</p>
+    <p class="lead">Pour toute demande concernant l'exposition E-LLUSION, contactez le responsable du projet ou le référent de la salle concernée.</p>
 
     <div class="contact-grid">
       <article class="contact-card dark">
         <p>✉</p>
         <p class="eyebrow">Responsable du projet</p>
-        <h2>Noémie Maulant</h2>
-        <p><a class="contact-link" href="mailto:noemie.maulant@univ-smb.fr">noemie.maulant@univ-smb.fr ↗</a></p>
+        <h2>François Piranda</h2>
+        <p><a class="contact-link" href="mailto:francois.piranda@univ-smb.fr">francois.piranda@univ-smb.fr ↗</a></p>
       </article>
+    </div>
 
-      <article class="contact-card">
-        <p>✉</p>
-        <p class="eyebrow">Référent·e inscriptions</p>
-        <h2>Étudiant·e d'agence</h2>
-        <p><a class="contact-link" href="mailto:referent.mmi@univ-smb.fr">referent.mmi@univ-smb.fr ↗</a></p>
-        <p>En cas de problème avec votre inscription ou cas particulier.</p>
-      </article>
+    <div class="location-block">
+      <h2>Référents par salle</h2>
+      <p>Un·e étudiant·e référent·e par salle, en cas de problème avec votre inscription.</p>
+
+      <div class="room-grid">
+        <?php foreach ($salles as $salle) {
+            // Email bidon construit a partir du nom de la salle (ex: referent-salle002@univ-smb.fr).
+            $slug = str_replace(' ', '', strtolower($salle['nom_salle']));
+            $mail = 'referent-' . $slug . '@univ-smb.fr';
+        ?>
+          <article class="contact-card">
+            <p class="eyebrow">Référent·e</p>
+            <h2><?php echo e($salle['nom_salle']); ?></h2>
+            <p><a class="contact-link" href="mailto:<?php echo e($mail); ?>"><?php echo e($mail); ?> ↗</a></p>
+          </article>
+        <?php } ?>
+      </div>
     </div>
 
     <div class="location-block">

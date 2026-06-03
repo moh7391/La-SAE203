@@ -90,15 +90,6 @@ function eillusion_heure($heureSql) {
     return substr((string) $heureSql, 0, 5);
 }
 
-// Code de reservation affiche au visiteur (ex: ELL-000012).
-function eillusion_reservation_code($idInscription) {
-    return 'ELL-' . str_pad((string) ((int) $idInscription), 6, '0', STR_PAD_LEFT);
-}
-function eillusion_id_from_reservation_code($code) {
-    $chiffres = preg_replace('/\D/', '', (string) $code);
-    return $chiffres === '' ? 0 : (int) $chiffres;
-}
-
 function eillusion_page_title($titre) {
     return $titre . ' — E-LLUSION';
 }

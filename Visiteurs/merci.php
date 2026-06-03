@@ -30,9 +30,6 @@ require_once 'header.php';
       <p>Un récapitulatif a été envoyé à <strong><?php echo e($info['email']); ?></strong>.</p>
 
       <div class="confirm-card">
-        <span class="eyebrow">Code de réservation</span>
-        <div class="confirm-code"><?php echo e(eillusion_reservation_code($info['id_inscription'])); ?></div>
-
         <div class="recap-grid">
           <div>
             <span>Salle</span>
@@ -53,7 +50,7 @@ require_once 'header.php';
         </div>
       </div>
 
-      <p>Conservez votre code pour modifier ou annuler votre réservation depuis « Ma réservation ».</p>
+      <p>Pour modifier ou annuler votre réservation, rendez-vous dans « Ma réservation » avec votre adresse e-mail.</p>
       <p><a href="index.php" class="btn">Retour à l'accueil</a></p>
     <?php } ?>
   </div>
