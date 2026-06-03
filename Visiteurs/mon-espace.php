@@ -143,7 +143,7 @@ require_once 'header.php';
                 <button type="submit" class="btn" style="margin-top:12px;">Modifier</button>
               </form>
 
-              <form action="mon-espace.php" method="post" onsubmit="return confirm('Annuler cette inscription ?');">
+              <form action="mon-espace.php" method="post">
                 <input type="hidden" name="action" value="annuler">
                 <input type="hidden" name="id_inscription" value="<?php echo (int) $ins['id_inscription']; ?>">
                 <input type="hidden" name="email" value="<?php echo e($emailRecherche); ?>">
