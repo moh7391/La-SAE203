@@ -9,6 +9,17 @@ require_once 'header.php';
 // Les salles viennent de la base.
 $salles = eillusion_get_salles($CONNEXION);
 ?>
+<aside class="accessibility-panel" aria-label="Options d'affichage">
+  <div class="accessibility-title">Affichage</div>
+  <div class="accessibility-group" aria-label="Taille du texte">
+    <button type="button" data-font-size="normal" aria-label="Taille normale">A</button>
+    <button type="button" data-font-size="large" aria-label="Texte agrandi">A+</button>
+  </div>
+  <div class="accessibility-group" aria-label="Contraste">
+    <button type="button" data-contrast="normal" aria-label="Contraste normal">Normal</button>
+    <button type="button" data-contrast="high" aria-label="Contraste élevé">Contraste +</button>
+  </div>
+</aside>
 <main>
   <section class="hero">
     <div class="container">

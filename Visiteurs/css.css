@@ -27,6 +27,17 @@
 * { box-sizing:border-box; }
 body { margin:0; color:var(--black); background:var(--mint);
   font-family:var(--font-text); font-size:1.12em; line-height:1.55; }
+body.font-large { font-size:1.24em; }
+body.contrast-high {
+  --mint:#fff;
+  --aqua:#00d9c7;
+  --teal:#007f73;
+  --black:#000;
+  --white:#fff;
+  --red:#8a0000;
+  --bord:#000;
+  --ombre:0 .375em 1.125em rgba(0,0,0,.18);
+}
 a { color:inherit; text-decoration:none; }
 button, input, select { font:inherit; }
 button { cursor:pointer; }
@@ -67,6 +78,53 @@ button:disabled { opacity:.5; cursor:not-allowed; }
 .capsule { display:inline-block; margin-bottom:.875em; padding:.375em .875em; border-radius:1.25em;
   background:var(--white); border:.0625em solid var(--bord); font-size:.9em; font-weight:700; text-transform:uppercase; }
 .hero-actions { display:flex; flex-wrap:wrap; justify-content:center; gap:.9em; margin-top:1.25em; }
+
+.accessibility-panel {
+  position:fixed;
+  left:.75em;
+  top:50%;
+  z-index:20;
+  width:7.2em;
+  padding:.62em;
+  color:var(--black);
+  background:var(--white);
+  border:.0625em solid var(--bord);
+  border-radius:.75em;
+  box-shadow:var(--ombre);
+  transform:translateY(-50%);
+}
+.accessibility-title {
+  margin-bottom:.45em;
+  color:var(--teal);
+  font-weight:700;
+  text-transform:uppercase;
+  font-size:.72em;
+}
+.accessibility-group {
+  display:grid;
+  gap:.35em;
+  margin-top:.4em;
+}
+.accessibility-group button {
+  min-height:2em;
+  padding:.32em .45em;
+  color:var(--black);
+  background:var(--mint);
+  border:.0625em solid var(--bord);
+  border-radius:999em;
+  font-size:.82em;
+  font-weight:700;
+}
+.accessibility-group button[aria-pressed="true"],
+.accessibility-group button:hover {
+  color:var(--white);
+  background:var(--black);
+}
+body.contrast-high .accessibility-group button[aria-pressed="true"],
+body.contrast-high .accessibility-group button:hover {
+  color:var(--black);
+  background:var(--aqua);
+}
 
 /* Cartes de salles */
 .section-head { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; margin-bottom:2em; }
@@ -165,4 +223,18 @@ th { color:var(--teal); text-transform:uppercase; font-size:.86em; }
   .container, .form-wrap, .footer-main, .footer-bottom { width:min(100% - 1.5em, 76em); }
   .footer-main { gap:1.2em; }
   .pixel-title.big { font-size:3.4em; }
+  .accessibility-panel {
+    left:.75em;
+    right:.75em;
+    top:auto;
+    bottom:.75em;
+    width:auto;
+    transform:none;
+  }
+  .accessibility-group {
+    grid-template-columns:repeat(2,1fr);
+  }
+  .accessibility-group:last-child {
+    grid-template-columns:repeat(2,1fr);
+  }
 }
