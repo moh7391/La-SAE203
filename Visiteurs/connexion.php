@@ -9,7 +9,7 @@ if ($_SERVER['SERVER_NAME'] == "localhost" || $_SERVER['SERVER_NAME'] == "127.0.
     $MOTDEPASSE = "";
     $BASE = "203";
 } else {
-    // En ligne (serveur OVH)
+    // En ligne (serveur mmi-agences)
     $SERVEUR = "localhost";
     $UTILISATEUR = "jacqluca";
     $MOTDEPASSE = "IoneUééT03122007:/*";
