@@ -10,10 +10,10 @@ if ($_SERVER['SERVER_NAME'] == "localhost" || $_SERVER['SERVER_NAME'] == "127.0.
     $BASE = "203";
 } else {
     // En ligne (serveur mmi-agences)
-    $SERVEUR = "localhost";
-    $UTILISATEUR = "jacqluca";
-    $MOTDEPASSE = "IoneUééT03122007:/*";
-    $BASE = "jacqluca";
+    $SERVEUR = "192.168.135.113";
+    $UTILISATEUR = "morissne";
+    $MOTDEPASSE = "Zlatan@@2203"; // <-- remplace par ton mot de passe MySQL
+    $BASE = "morissne";
 }
 
 $CONNEXION = mysqli_connect($SERVEUR, $UTILISATEUR, $MOTDEPASSE, $BASE);
