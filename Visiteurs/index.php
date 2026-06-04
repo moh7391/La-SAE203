@@ -34,6 +34,21 @@ $salles = eillusion_get_salles($CONNEXION);
     </div>
   </section>
 
+  <section class="concept-section">
+    <div class="container concept-grid">
+      <div class="concept-text">
+        <p class="concept-eyebrow">Le concept</p>
+        <h2 class="pixel-title concept-title">Quand le r&eacute;el.....</h2>
+        <p>Voici une zone de texte qui pr&eacute;sente rapidement l'exposition totale E-LLUSION.</p>
+        <p>Chaque salle est une exp&eacute;rience MMI, un univers singulier con&ccedil;u pour d&eacute;clencher des sensations et des illusions.</p>
+      </div>
+      <a class="concept-video-link" href="https://www.youtube.com/" target="_blank" rel="noopener">
+        <span class="play-icon" aria-hidden="true"></span>
+        <span>Voir la vid&eacute;o</span>
+      </a>
+    </div>
+  </section>
+
   <section class="rooms-home">
     <div class="container">
       <div class="section-head">
