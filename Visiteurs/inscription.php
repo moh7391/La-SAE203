@@ -66,6 +66,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         "INSERT INTO inscription (id_creneau, id_participant, date_inscription)
                          VALUES ($idCreneau, $idParticipant, '$date')");
                     $idInscription = mysqli_insert_id($CONNEXION);
+
+                    // On envoie un petit mail de confirmation au participant.
+                    $destinataire = trim($_POST['email']);
+                    $sujet = "Confirmation de votre inscription - E-LLUSION";
+                    $jour = eillusion_date_label($creneau['date_creneau']);
+                    $heure = eillusion_heure($creneau['heure_debut']);
+                    $contenu = "Bonjour $prenom,\n\n"
+                             . "Votre inscription a l'exposition E-LLUSION est confirmee.\n\n"
+                             . "Salle : " . $creneau['nom_salle'] . "\n"
+                             . "Date : $jour\n"
+                             . "Heure : $heure\n\n"
+                             . "A bientot !\nL'equipe E-LLUSION";
+                    $entetes = "From: noreply@e-llusion.fr";
+                    mail($destinataire, $sujet, $contenu, $entetes);
+
                     header("Location: merci.php?id=$idInscription");
                     exit;
                 }
