@@ -10,7 +10,7 @@
         <h3>Suivez-nous</h3>
         <ul class="footer-links">
           <li>
-            <a href="https://www.instagram.com/mmi_chambery/" target="_blank" rel="noopener">
+            <a href="https://www.instagram.com/mmichambery/" target="_blank" rel="noopener">
               <span class="footer-icon" aria-hidden="true">
                 <svg width="18" height="18" viewBox="0 0 24 24" focusable="false">
                   <rect x="4" y="4" width="16" height="16" rx="5"></rect>
