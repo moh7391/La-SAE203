@@ -11,9 +11,9 @@ if ($_SERVER['SERVER_NAME'] == "localhost" || $_SERVER['SERVER_NAME'] == "127.0.
 } else {
     // En ligne (serveur mmi-agences)
     $SERVEUR = "localhost";
-    $UTILISATEUR = "jacqluca";
-    $MOTDEPASSE = "IoneUééT03122007:/*";
-    $BASE = "jacqluca";
+    $UTILISATEUR = "FZFZEFZE";
+    $MOTDEPASSE = "yzevyaeffAEZ:/*";
+    $BASE = "AZUGCHZEF";
 }
 
 $CONNEXION = mysqli_connect($SERVEUR, $UTILISATEUR, $MOTDEPASSE, $BASE);
