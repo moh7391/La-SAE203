@@ -1,48 +1,75 @@
 document.addEventListener('DOMContentLoaded', function () {
-  var fontKey = 'eillusion-font-size';
-  var contrastKey = 'eillusion-contrast';
   var body = document.body;
-  var panel = document.querySelector('.accessibility-panel');
+  var boutonsTexte = document.querySelectorAll('[data-font-size]');
+  var boutonsContraste = document.querySelectorAll('[data-contrast]');
 
-  function applyFontSize(value) {
+  function choisirTailleTexte(valeur) {
     body.classList.remove('font-large');
-    if (value === 'large') {
+
+    if (valeur == 'large') {
       body.classList.add('font-large');
     }
-    localStorage.setItem(fontKey, value);
-    updatePressed('[data-font-size]', value);
+
+    localStorage.setItem('eillusion-font-size', valeur);
+    afficherBoutonActif(boutonsTexte, 'data-font-size', valeur);
   }
 
-  function applyContrast(value) {
-    body.classList.toggle('contrast-high', value === 'high');
-    localStorage.setItem(contrastKey, value);
-    updatePressed('[data-contrast]', value);
-  }
+  function choisirContraste(valeur) {
+    body.classList.remove('contrast-high');
 
-  function updatePressed(selector, value) {
-    document.querySelectorAll(selector).forEach(function (button) {
-      var active = button.getAttribute(selector === '[data-font-size]' ? 'data-font-size' : 'data-contrast') === value;
-      button.setAttribute('aria-pressed', active ? 'true' : 'false');
-    });
-  }
-
-  applyFontSize(localStorage.getItem(fontKey) || 'normal');
-  applyContrast(localStorage.getItem(contrastKey) || 'normal');
-
-  if (!panel) {
-    return;
-  }
-
-  panel.addEventListener('click', function (event) {
-    var button = event.target.closest('button');
-    if (!button) {
-      return;
+    if (valeur == 'high') {
+      body.classList.add('contrast-high');
     }
-    if (button.dataset.fontSize) {
-      applyFontSize(button.dataset.fontSize);
+
+    localStorage.setItem('eillusion-contrast', valeur);
+    afficherBoutonActif(boutonsContraste, 'data-contrast', valeur);
+  }
+
+  function afficherBoutonActif(boutons, attribut, valeur) {
+    var i;
+    var bouton;
+
+    for (i = 0; i < boutons.length; i = i + 1) {
+      bouton = boutons[i];
+
+      if (bouton.getAttribute(attribut) == valeur) {
+        bouton.setAttribute('aria-pressed', 'true');
+      } else {
+        bouton.setAttribute('aria-pressed', 'false');
+      }
     }
-    if (button.dataset.contrast) {
-      applyContrast(button.dataset.contrast);
-    }
-  });
+  }
+
+  function clicTailleTexte() {
+    var valeur = this.getAttribute('data-font-size');
+    choisirTailleTexte(valeur);
+  }
+
+  function clicContraste() {
+    var valeur = this.getAttribute('data-contrast');
+    choisirContraste(valeur);
+  }
+
+  var tailleEnregistree = localStorage.getItem('eillusion-font-size');
+  var contrasteEnregistre = localStorage.getItem('eillusion-contrast');
+  var i;
+
+  if (!tailleEnregistree) {
+    tailleEnregistree = 'normal';
+  }
+
+  if (!contrasteEnregistre) {
+    contrasteEnregistre = 'normal';
+  }
+
+  choisirTailleTexte(tailleEnregistree);
+  choisirContraste(contrasteEnregistre);
+
+  for (i = 0; i < boutonsTexte.length; i = i + 1) {
+    boutonsTexte[i].addEventListener('click', clicTailleTexte);
+  }
+
+  for (i = 0; i < boutonsContraste.length; i = i + 1) {
+    boutonsContraste[i].addEventListener('click', clicContraste);
+  }
 });

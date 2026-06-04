@@ -131,7 +131,7 @@ button { cursor: pointer; }
 }
 
 .admin-title {
-  font-size: clamp(36px, 4.2vw, 52px);
+  font-size: 46px;
 }
 
 .admin-card {
@@ -434,7 +434,7 @@ button { cursor: pointer; }
 
 .login-card .admin-title {
   margin-bottom: 48px;
-  font-size: clamp(42px, 5vw, 58px);
+  font-size: 52px;
 }
 
 .login-form {

@@ -1,26 +1,40 @@
 <?php
-// Gestion des creneaux.
+// Page administrateur : liste des creneaux.
 
 require_once 'verif.php';
 require_once 'connexion.php';
 require_once 'eillusion-data.php';
 
-$filtreSalle = isset($_GET['salle']) ? (int) $_GET['salle'] : 0;
-$filtreDate = isset($_GET['date']) ? $_GET['date'] : '';
+$filtreSalle = 0;
+$filtreDate = '';
+
+if (isset($_GET['salle'])) {
+    $filtreSalle = (int) $_GET['salle'];
+}
+
+if (isset($_GET['date'])) {
+    $filtreDate = $_GET['date'];
+}
 
 $salles = eillusion_db_salles($CONNEXION);
-$creneaux = eillusion_get_creneaux($CONNEXION, 0);
+$tousLesCreneaux = eillusion_get_creneaux($CONNEXION, 0);
+$creneaux = array();
 
-if ($filtreSalle > 0 || $filtreDate !== '') {
-    $creneaux = array_filter($creneaux, function ($c) use ($filtreSalle, $filtreDate) {
-        if ($filtreSalle > 0 && (int) $c['id_salle'] !== $filtreSalle) {
-            return false;
-        }
-        if ($filtreDate !== '' && $c['date_creneau'] !== $filtreDate) {
-            return false;
-        }
-        return true;
-    });
+// On garde seulement les creneaux qui correspondent aux filtres.
+foreach ($tousLesCreneaux as $creneau) {
+    $garder = true;
+
+    if ($filtreSalle > 0 && (int) $creneau['id_salle'] != $filtreSalle) {
+        $garder = false;
+    }
+
+    if ($filtreDate != '' && $creneau['date_creneau'] != $filtreDate) {
+        $garder = false;
+    }
+
+    if ($garder) {
+        $creneaux[] = $creneau;
+    }
 }
 
 $page_title = 'Gestion des creneaux - E-LLUSION admin';
@@ -29,18 +43,20 @@ include 'header.php';
 ?>
 <main class="admin-main">
   <section class="admin-page-head">
-    <h1 class="admin-title">Gestion des créneaux</h1>
-    <a class="admin-btn small" href="creneaux.php">+ Ajouter un créneau</a>
+    <h1 class="admin-title">Gestion des cr&eacute;neaux</h1>
+    <a class="admin-btn small" href="creneaux.php">+ Ajouter un cr&eacute;neau</a>
   </section>
 
   <form class="admin-card filter-card" method="get" action="creneaux.php">
     <div class="filter-grid">
       <div class="field">
         <label for="salle">Filtrer par salle</label>
+
         <select id="salle" name="salle" onchange="this.form.submit()">
           <option value="">Toutes les salles</option>
+
           <?php foreach ($salles as $salle) { ?>
-            <option value="<?php echo (int) $salle['id_salle']; ?>"<?php if ($filtreSalle === (int) $salle['id_salle']) echo ' selected'; ?>>
+            <option value="<?php echo (int) $salle['id_salle']; ?>" <?php if ($filtreSalle == (int) $salle['id_salle']) { echo 'selected'; } ?>>
               <?php echo admin_e($salle['nom_salle']); ?>
             </option>
           <?php } ?>
@@ -61,7 +77,7 @@ include 'header.php';
           <tr>
             <th>Salle</th>
             <th>Date</th>
-            <th>Heure début</th>
+            <th>Heure d&eacute;but</th>
             <th>Heure fin</th>
             <th>Jauge max</th>
             <th>Inscrits</th>
@@ -69,27 +85,42 @@ include 'header.php';
             <th>Actions</th>
           </tr>
         </thead>
+
         <tbody>
-          <?php if (count($creneaux) === 0) { ?>
+          <?php if (count($creneaux) == 0) { ?>
             <tr>
-              <td colspan="8">Aucun créneau trouvé.</td>
+              <td colspan="8">Aucun cr&eacute;neau trouv&eacute;.</td>
             </tr>
           <?php } ?>
-          <?php $index = 0; foreach ($creneaux as $c) { $index++; ?>
-            <tr<?php if ($index % 2 === 0) echo ' class="row-soft"'; ?>>
-              <td><?php echo admin_e($c['nom_salle']); ?></td>
-              <td><?php echo admin_e(eillusion_date_courte($c['date_creneau'])); ?></td>
-              <td><?php echo admin_e(eillusion_heure($c['heure_debut'])); ?></td>
-              <td><?php echo admin_e(eillusion_heure($c['heure_fin'])); ?></td>
-              <td><?php echo (int) $c['jauge']; ?></td>
-              <td><?php echo (int) $c['nb_inscrits']; ?></td>
+
+          <?php $numeroLigne = 0; ?>
+
+          <?php foreach ($creneaux as $creneau) { ?>
+            <?php
+            $numeroLigne = $numeroLigne + 1;
+            $classeLigne = '';
+
+            if ($numeroLigne % 2 == 0) {
+                $classeLigne = ' class="row-soft"';
+            }
+            ?>
+
+            <tr<?php echo $classeLigne; ?>>
+              <td><?php echo admin_e($creneau['nom_salle']); ?></td>
+              <td><?php echo admin_e(eillusion_date_courte($creneau['date_creneau'])); ?></td>
+              <td><?php echo admin_e(eillusion_heure($creneau['heure_debut'])); ?></td>
+              <td><?php echo admin_e(eillusion_heure($creneau['heure_fin'])); ?></td>
+              <td><?php echo (int) $creneau['jauge']; ?></td>
+              <td><?php echo (int) $creneau['nb_inscrits']; ?></td>
+
               <td>
-                <?php if ((int) $c['places_restantes'] <= 0) { ?>
+                <?php if ((int) $creneau['places_restantes'] <= 0) { ?>
                   <span class="status-full">0 (Complet)</span>
                 <?php } else { ?>
-                  <span class="stat-inline"><?php echo (int) $c['places_restantes']; ?></span>
+                  <span class="stat-inline"><?php echo (int) $creneau['places_restantes']; ?></span>
                 <?php } ?>
               </td>
+
               <td>
                 <div class="btn-row">
                   <a class="admin-pill" href="creneaux.php">Modifier</a>

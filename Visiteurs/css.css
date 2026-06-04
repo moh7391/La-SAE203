@@ -236,7 +236,8 @@ body.contrast-high .accessibility-group button:hover {
 .choice-grid, .form-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1.25em; margin:1.25em 0; }
 .slot-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1em; margin:1.25em 0; }
 .choice-card, .slot-card { display:block; padding:1.2em; border:.125em solid var(--bord); border-radius:.75em; background:var(--white); text-align:center; cursor:pointer; font-size:1.08em; }
-.choice-card:has(input:checked), .slot-card:has(input:checked) { border-color:var(--aqua); background:var(--mint); }
+.choice-card input:checked + .choice-body,
+.slot-card input:checked + .slot-body { color:var(--teal); }
 .slot-card.complet { opacity:.5; }
 .slot-card strong { display:block; font-size:1.12em; }
 .field.full { grid-column:1 / -1; }

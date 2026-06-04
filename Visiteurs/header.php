@@ -2,11 +2,17 @@
 if (!isset($page_title)) {
     $page_title = 'E-LLUSION';
 }
+
 if (!isset($active_page)) {
     $active_page = '';
 }
-function nav_active($nom, $active_page) {
-    return $nom === $active_page ? ' class="active"' : '';
+
+function nav_active($page, $active_page) {
+    if ($page == $active_page) {
+        return ' class="active"';
+    }
+
+    return '';
 }
 ?>
 <!DOCTYPE html>
@@ -14,8 +20,8 @@ function nav_active($nom, $active_page) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><?php echo htmlspecialchars($page_title, ENT_QUOTES, 'UTF-8'); ?></title>
-  <link rel="stylesheet" href="css.css?v=<?php echo filemtime(__DIR__ . '/css.css'); ?>">
+  <title><?php echo e($page_title); ?></title>
+  <link rel="stylesheet" href="css.css">
 </head>
 <body>
 <header class="client-header">
@@ -24,7 +30,7 @@ function nav_active($nom, $active_page) {
   <nav class="client-nav" aria-label="Navigation principale">
     <a href="index.php"<?php echo nav_active('accueil', $active_page); ?>>Accueil</a>
     <a href="salles.php"<?php echo nav_active('salles', $active_page); ?>>Les Salles</a>
-    <a href="mon-espace.php"<?php echo nav_active('reservation', $active_page); ?>>Ma réservation</a>
+    <a href="mon-espace.php"<?php echo nav_active('reservation', $active_page); ?>>Ma r&eacute;servation</a>
     <a href="contact.php"<?php echo nav_active('contact', $active_page); ?>>Contact</a>
   </nav>
 </header>

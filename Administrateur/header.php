@@ -1,31 +1,38 @@
 <?php
-if (!function_exists('admin_e')) {
-    function admin_e($valeur) {
-        return htmlspecialchars((string) $valeur, ENT_QUOTES, 'UTF-8');
-    }
+function admin_e($valeur) {
+    return htmlspecialchars((string) $valeur, ENT_QUOTES, 'UTF-8');
 }
 
-if (!function_exists('admin_active')) {
-    function admin_active($page, $activePage) {
-        return $page === $activePage ? ' class="active"' : '';
+function admin_active($page, $active_page) {
+    if ($page == $active_page) {
+        return ' class="active"';
     }
+
+    return '';
 }
 
 if (!isset($page_title)) {
     $page_title = 'E-LLUSION admin';
 }
+
 if (!isset($active_page)) {
     $active_page = '';
 }
+
 if (!isset($body_class)) {
     $body_class = '';
 }
+
 if (!isset($admin_show_nav)) {
     $admin_show_nav = true;
 }
 
 $body_class = trim('admin-body ' . $body_class);
-$logo_link = $admin_show_nav ? 'accueil.php' : 'login.php';
+$logo_link = 'login.php';
+
+if ($admin_show_nav) {
+    $logo_link = 'accueil.php';
+}
 ?>
 <!doctype html>
 <html lang="fr">
@@ -33,7 +40,7 @@ $logo_link = $admin_show_nav ? 'accueil.php' : 'login.php';
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?php echo admin_e($page_title); ?></title>
-  <link rel="stylesheet" href="admin.css?v=<?php echo filemtime(__DIR__ . '/admin.css'); ?>">
+  <link rel="stylesheet" href="admin.css">
 </head>
 <body class="<?php echo admin_e($body_class); ?>">
   <header class="admin-header">

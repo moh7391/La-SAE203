@@ -5,27 +5,34 @@ session_start();
 require_once 'connexion.php';
 
 if (isset($_SESSION['admin_id'])) {
-    header("Location: accueil.php");
+    header('Location: accueil.php');
     exit;
 }
 
-$erreur = "";
+$erreur = '';
 
-if ($_SERVER['REQUEST_METHOD'] == "POST") {
-    $login = mysqli_real_escape_string($CONNEXION, $_POST['login']);
-    $mdp = $_POST['mot_de_passe'];
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $login = trim($_POST['login']);
+    $motDePasse = $_POST['mot_de_passe'];
 
-    $res = mysqli_query($CONNEXION, "SELECT * FROM administrateur WHERE login = '$login'");
-    $admin = mysqli_fetch_assoc($res);
+    $loginSql = mysqli_real_escape_string($CONNEXION, $login);
 
-    if ($admin && password_verify($mdp, $admin['mot_de_passe'])) {
+    $sql = "SELECT *
+            FROM administrateur
+            WHERE login = '$loginSql'";
+
+    $resultat = mysqli_query($CONNEXION, $sql);
+    $admin = mysqli_fetch_assoc($resultat);
+
+    if ($admin && password_verify($motDePasse, $admin['mot_de_passe'])) {
         $_SESSION['admin_id'] = $admin['id_admin'];
         $_SESSION['admin_nom'] = $admin['nom'];
-        header("Location: accueil.php");
+
+        header('Location: accueil.php');
         exit;
     }
 
-    $erreur = "Identifiants incorrects.";
+    $erreur = 'Identifiants incorrects.';
 }
 
 $page_title = 'Connexion administrateur - E-LLUSION';
@@ -38,7 +45,7 @@ include 'header.php';
     <section class="admin-card login-card">
       <h1 class="admin-title">Connexion<br>administrateur</h1>
 
-      <?php if ($erreur != "") { ?>
+      <?php if ($erreur != '') { ?>
         <p class="admin-error"><?php echo admin_e($erreur); ?></p>
       <?php } ?>
 
@@ -56,7 +63,7 @@ include 'header.php';
         <button class="admin-btn" type="submit">Se connecter</button>
       </form>
 
-      <p class="login-note">Accès réservé aux administrateurs</p>
+      <p class="login-note">Acc&egrave;s r&eacute;serv&eacute; aux administrateurs</p>
       <span class="login-dot" aria-hidden="true"></span>
     </section>
   </main>

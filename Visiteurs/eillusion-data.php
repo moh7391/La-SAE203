@@ -1,96 +1,157 @@
 <?php
-// Fonctions partagees pour les pages visiteurs.
-// Tout vient de la BASE DE DONNEES : aucune information ecrite en dur.
+// Fonctions simples utilisees par les pages visiteurs.
+// Elles evitent de recopier les memes requetes partout.
 
-// Affiche un texte sans casser le HTML (securite).
 function e($valeur) {
+    // Protege le HTML quand on affiche une valeur.
     return htmlspecialchars((string) $valeur, ENT_QUOTES, 'UTF-8');
 }
 
-// Toutes les salles (table salle).
-function eillusion_get_salles($CONNEXION) {
-    $salles = array();
-    $res = mysqli_query($CONNEXION, "SELECT * FROM salle ORDER BY id_salle");
-    while ($s = mysqli_fetch_assoc($res)) {
-        $salles[] = $s;
+function eillusion_lire_toutes_les_lignes($resultat) {
+    $lignes = array();
+
+    if (!$resultat) {
+        return $lignes;
     }
-    return $salles;
+
+    while ($ligne = mysqli_fetch_assoc($resultat)) {
+        $lignes[] = $ligne;
+    }
+
+    return $lignes;
 }
 
-// Une salle a partir de son id.
+function eillusion_get_salles($CONNEXION) {
+    $sql = "SELECT * FROM salle ORDER BY id_salle";
+    $resultat = mysqli_query($CONNEXION, $sql);
+
+    return eillusion_lire_toutes_les_lignes($resultat);
+}
+
 function eillusion_get_salle($CONNEXION, $idSalle) {
     $idSalle = (int) $idSalle;
-    $res = mysqli_query($CONNEXION, "SELECT * FROM salle WHERE id_salle = $idSalle");
-    return mysqli_fetch_assoc($res);
+
+    $sql = "SELECT * FROM salle WHERE id_salle = $idSalle";
+    $resultat = mysqli_query($CONNEXION, $sql);
+
+    return mysqli_fetch_assoc($resultat);
 }
 
-// Les oeuvres exposees dans une salle (tables contenir + element_expo).
 function eillusion_get_elements($CONNEXION, $idSalle) {
     $idSalle = (int) $idSalle;
-    $liste = array();
-    $res = mysqli_query($CONNEXION,
-        "SELECT element_expo.titre, element_expo.description
-         FROM contenir
-         JOIN element_expo ON element_expo.id_element = contenir.id_element
-         WHERE contenir.id_salle = $idSalle");
-    while ($el = mysqli_fetch_assoc($res)) {
-        $liste[] = $el;
-    }
-    return $liste;
+
+    $sql = "SELECT element_expo.titre, element_expo.description
+            FROM contenir
+            JOIN element_expo ON element_expo.id_element = contenir.id_element
+            WHERE contenir.id_salle = $idSalle";
+
+    $resultat = mysqli_query($CONNEXION, $sql);
+
+    return eillusion_lire_toutes_les_lignes($resultat);
 }
 
-// Les creneaux avec le nombre de places restantes.
-// Si $idSalle > 0, on ne prend que les creneaux de cette salle.
 function eillusion_get_creneaux($CONNEXION, $idSalle = 0) {
     $idSalle = (int) $idSalle;
-    $where = $idSalle > 0 ? "WHERE creneau.id_salle = $idSalle" : "";
-    $liste = array();
-    $res = mysqli_query($CONNEXION,
-        "SELECT creneau.*, salle.nom_salle,
-                (SELECT COUNT(*) FROM inscription WHERE inscription.id_creneau = creneau.id_creneau) AS nb_inscrits
-         FROM creneau
-         JOIN salle ON salle.id_salle = creneau.id_salle
-         $where
-         ORDER BY creneau.date_creneau, creneau.heure_debut");
-    while ($c = mysqli_fetch_assoc($res)) {
-        $c['places_restantes'] = (int) $c['jauge'] - (int) $c['nb_inscrits'];
-        $liste[] = $c;
+    $filtreSalle = "";
+
+    if ($idSalle > 0) {
+        $filtreSalle = "WHERE creneau.id_salle = $idSalle";
     }
-    return $liste;
+
+    $sql = "SELECT creneau.*, salle.nom_salle,
+                   (SELECT COUNT(*)
+                    FROM inscription
+                    WHERE inscription.id_creneau = creneau.id_creneau) AS nb_inscrits
+            FROM creneau
+            JOIN salle ON salle.id_salle = creneau.id_salle
+            $filtreSalle
+            ORDER BY creneau.date_creneau, creneau.heure_debut";
+
+    $resultat = mysqli_query($CONNEXION, $sql);
+    $creneaux = eillusion_lire_toutes_les_lignes($resultat);
+
+    // On ajoute le nombre de places restantes dans chaque creneau.
+    foreach ($creneaux as $numero => $creneau) {
+        $jauge = (int) $creneau['jauge'];
+        $nbInscrits = (int) $creneau['nb_inscrits'];
+        $placesRestantes = $jauge - $nbInscrits;
+
+        $creneaux[$numero]['places_restantes'] = $placesRestantes;
+    }
+
+    return $creneaux;
 }
 
-// Un creneau a partir de son id (avec places restantes).
 function eillusion_get_creneau($CONNEXION, $idCreneau) {
     $idCreneau = (int) $idCreneau;
-    $res = mysqli_query($CONNEXION,
-        "SELECT creneau.*, salle.nom_salle,
-                (SELECT COUNT(*) FROM inscription WHERE inscription.id_creneau = creneau.id_creneau) AS nb_inscrits
-         FROM creneau
-         JOIN salle ON salle.id_salle = creneau.id_salle
-         WHERE creneau.id_creneau = $idCreneau");
-    $c = mysqli_fetch_assoc($res);
-    if ($c) {
-        $c['places_restantes'] = (int) $c['jauge'] - (int) $c['nb_inscrits'];
+
+    $sql = "SELECT creneau.*, salle.nom_salle,
+                   (SELECT COUNT(*)
+                    FROM inscription
+                    WHERE inscription.id_creneau = creneau.id_creneau) AS nb_inscrits
+            FROM creneau
+            JOIN salle ON salle.id_salle = creneau.id_salle
+            WHERE creneau.id_creneau = $idCreneau";
+
+    $resultat = mysqli_query($CONNEXION, $sql);
+    $creneau = mysqli_fetch_assoc($resultat);
+
+    if ($creneau) {
+        $jauge = (int) $creneau['jauge'];
+        $nbInscrits = (int) $creneau['nb_inscrits'];
+        $creneau['places_restantes'] = $jauge - $nbInscrits;
     }
-    return $c;
+
+    return $creneau;
 }
 
-// Mise en forme des dates et heures.
-// Affiche le jour en francais, ex : "Jeudi 18 juin 2026".
 function eillusion_date_label($dateSql) {
-    $jours = array('Sunday'=>'Dimanche','Monday'=>'Lundi','Tuesday'=>'Mardi','Wednesday'=>'Mercredi','Thursday'=>'Jeudi','Friday'=>'Vendredi','Saturday'=>'Samedi');
-    $mois = array('January'=>'janvier','February'=>'février','March'=>'mars','April'=>'avril','May'=>'mai','June'=>'juin','July'=>'juillet','August'=>'août','September'=>'septembre','October'=>'octobre','November'=>'novembre','December'=>'décembre');
-    $t = strtotime($dateSql);
-    return $jours[date('l', $t)] . ' ' . date('j', $t) . ' ' . $mois[date('F', $t)] . ' ' . date('Y', $t);
+    $timestamp = strtotime($dateSql);
+
+    $jours = array(
+        'Sunday' => 'Dimanche',
+        'Monday' => 'Lundi',
+        'Tuesday' => 'Mardi',
+        'Wednesday' => 'Mercredi',
+        'Thursday' => 'Jeudi',
+        'Friday' => 'Vendredi',
+        'Saturday' => 'Samedi'
+    );
+
+    $mois = array(
+        'January' => 'janvier',
+        'February' => 'fevrier',
+        'March' => 'mars',
+        'April' => 'avril',
+        'May' => 'mai',
+        'June' => 'juin',
+        'July' => 'juillet',
+        'August' => 'aout',
+        'September' => 'septembre',
+        'October' => 'octobre',
+        'November' => 'novembre',
+        'December' => 'decembre'
+    );
+
+    $jourAnglais = date('l', $timestamp);
+    $moisAnglais = date('F', $timestamp);
+
+    $jourFrancais = $jours[$jourAnglais];
+    $moisFrancais = $mois[$moisAnglais];
+
+    return $jourFrancais . ' ' . date('j', $timestamp) . ' ' . $moisFrancais . ' ' . date('Y', $timestamp);
 }
+
 function eillusion_date_courte($dateSql) {
-    return date('d/m/Y', strtotime($dateSql));
+    $timestamp = strtotime($dateSql);
+    return date('d/m/Y', $timestamp);
 }
+
 function eillusion_heure($heureSql) {
-    return substr((string) $heureSql, 0, 5);
+    return substr($heureSql, 0, 5);
 }
 
 function eillusion_page_title($titre) {
-    return $titre . ' — E-LLUSION';
+    return $titre . ' - E-LLUSION';
 }
 ?>

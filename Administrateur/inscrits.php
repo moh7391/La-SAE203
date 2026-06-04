@@ -1,49 +1,82 @@
 <?php
-// Liste des inscriptions.
+// Page administrateur : liste des inscriptions.
 
 require_once 'verif.php';
 require_once 'connexion.php';
 require_once 'eillusion-data.php';
 
-$message = "";
+$message = '';
 
-if ($_SERVER['REQUEST_METHOD'] == "POST" && isset($_POST['id_inscription'])) {
-    $id = (int) $_POST['id_inscription'];
-    mysqli_query($CONNEXION, "DELETE FROM inscription WHERE id_inscription = $id");
-    $message = "Inscription annulée.";
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_inscription'])) {
+    $idInscription = (int) $_POST['id_inscription'];
+
+    $sqlSuppression = "DELETE FROM inscription
+                       WHERE id_inscription = $idInscription";
+
+    mysqli_query($CONNEXION, $sqlSuppression);
+    $message = 'Inscription annulee.';
 }
 
-$recherche = isset($_GET['q']) ? trim($_GET['q']) : '';
-$filtreSalle = isset($_GET['salle']) ? (int) $_GET['salle'] : 0;
-$filtreDate = isset($_GET['date']) ? $_GET['date'] : '';
-$filtreStatut = isset($_GET['statut']) ? $_GET['statut'] : '';
+$recherche = '';
+$filtreSalle = 0;
+$filtreDate = '';
+$filtreStatut = '';
 
-$where = array();
-if ($recherche !== '') {
-    $q = mysqli_real_escape_string($CONNEXION, $recherche);
-    $where[] = "(participant.nom LIKE '%$q%' OR participant.prenom LIKE '%$q%' OR participant.email LIKE '%$q%')";
+if (isset($_GET['q'])) {
+    $recherche = trim($_GET['q']);
 }
+
+if (isset($_GET['salle'])) {
+    $filtreSalle = (int) $_GET['salle'];
+}
+
+if (isset($_GET['date'])) {
+    $filtreDate = $_GET['date'];
+}
+
+if (isset($_GET['statut'])) {
+    $filtreStatut = $_GET['statut'];
+}
+
+// On construit la partie WHERE petit a petit.
+$conditions = array();
+
+if ($recherche != '') {
+    $rechercheSql = mysqli_real_escape_string($CONNEXION, $recherche);
+
+    $conditions[] = "(participant.nom LIKE '%$rechercheSql%'
+                      OR participant.prenom LIKE '%$rechercheSql%'
+                      OR participant.email LIKE '%$rechercheSql%')";
+}
+
 if ($filtreSalle > 0) {
-    $where[] = "salle.id_salle = $filtreSalle";
-}
-if ($filtreDate !== '') {
-    $date = mysqli_real_escape_string($CONNEXION, $filtreDate);
-    $where[] = "creneau.date_creneau = '$date'";
+    $conditions[] = "salle.id_salle = $filtreSalle";
 }
 
-$whereSql = count($where) > 0 ? 'WHERE ' . implode(' AND ', $where) : '';
+if ($filtreDate != '') {
+    $dateSql = mysqli_real_escape_string($CONNEXION, $filtreDate);
+    $conditions[] = "creneau.date_creneau = '$dateSql'";
+}
+
+$whereSql = '';
+
+if (count($conditions) > 0) {
+    $whereSql = 'WHERE ' . implode(' AND ', $conditions);
+}
 
 $salles = eillusion_db_salles($CONNEXION);
-$inscrits = mysqli_query($CONNEXION,
-    "SELECT inscription.id_inscription, participant.nom, participant.prenom,
-            participant.email, participant.telephone, salle.nom_salle,
-            creneau.date_creneau, creneau.heure_debut
-     FROM inscription
-     JOIN participant ON participant.id_participant = inscription.id_participant
-     JOIN creneau ON creneau.id_creneau = inscription.id_creneau
-     JOIN salle ON salle.id_salle = creneau.id_salle
-     $whereSql
-     ORDER BY inscription.id_inscription DESC");
+
+$sqlInscrits = "SELECT inscription.id_inscription, participant.nom, participant.prenom,
+                       participant.email, participant.telephone, salle.nom_salle,
+                       creneau.date_creneau, creneau.heure_debut
+                FROM inscription
+                JOIN participant ON participant.id_participant = inscription.id_participant
+                JOIN creneau ON creneau.id_creneau = inscription.id_creneau
+                JOIN salle ON salle.id_salle = creneau.id_salle
+                $whereSql
+                ORDER BY inscription.id_inscription DESC";
+
+$inscrits = mysqli_query($CONNEXION, $sqlInscrits);
 
 $page_title = 'Liste des inscrits - E-LLUSION admin';
 $active_page = 'inscrits';
@@ -54,7 +87,7 @@ include 'header.php';
     <h1 class="admin-title">Liste des inscrits</h1>
   </section>
 
-  <?php if ($message != "") { ?>
+  <?php if ($message != '') { ?>
     <p class="admin-message"><?php echo admin_e($message); ?></p>
   <?php } ?>
 
@@ -62,15 +95,17 @@ include 'header.php';
     <div class="filter-grid four">
       <div class="field">
         <label for="q">Rechercher un participant</label>
-        <input type="search" id="q" name="q" placeholder="Nom, prénom, email..." value="<?php echo admin_e($recherche); ?>">
+        <input type="search" id="q" name="q" placeholder="Nom, pr&eacute;nom, email..." value="<?php echo admin_e($recherche); ?>">
       </div>
 
       <div class="field">
         <label for="salle">Filtrer par salle</label>
+
         <select id="salle" name="salle" onchange="this.form.submit()">
           <option value="">Toutes</option>
+
           <?php foreach ($salles as $salle) { ?>
-            <option value="<?php echo (int) $salle['id_salle']; ?>"<?php if ($filtreSalle === (int) $salle['id_salle']) echo ' selected'; ?>>
+            <option value="<?php echo (int) $salle['id_salle']; ?>" <?php if ($filtreSalle == (int) $salle['id_salle']) { echo 'selected'; } ?>>
               <?php echo admin_e($salle['nom_salle']); ?>
             </option>
           <?php } ?>
@@ -84,9 +119,10 @@ include 'header.php';
 
       <div class="field">
         <label for="statut">Filtrer par statut</label>
+
         <select id="statut" name="statut" onchange="this.form.submit()">
           <option value="">Tous</option>
-          <option value="validee"<?php if ($filtreStatut === 'validee') echo ' selected'; ?>>Validée</option>
+          <option value="validee" <?php if ($filtreStatut == 'validee') { echo 'selected'; } ?>>Valid&eacute;e</option>
         </select>
       </div>
     </div>
@@ -98,35 +134,39 @@ include 'header.php';
         <thead>
           <tr>
             <th>Nom</th>
-            <th>Prénom</th>
+            <th>Pr&eacute;nom</th>
             <th>Email</th>
-            <th>Téléphone</th>
+            <th>T&eacute;l&eacute;phone</th>
             <th>Salle</th>
-            <th>Créneau</th>
+            <th>Cr&eacute;neau</th>
             <th>Statut</th>
             <th>Actions</th>
           </tr>
         </thead>
+
         <tbody>
-          <?php if (!$inscrits || mysqli_num_rows($inscrits) === 0) { ?>
+          <?php if (!$inscrits || mysqli_num_rows($inscrits) == 0) { ?>
             <tr>
-              <td colspan="8">Aucun inscrit trouvé.</td>
+              <td colspan="8">Aucun inscrit trouv&eacute;.</td>
             </tr>
           <?php } ?>
-          <?php while ($i = mysqli_fetch_assoc($inscrits)) { ?>
+
+          <?php while ($inscrit = mysqli_fetch_assoc($inscrits)) { ?>
             <tr>
-              <td><?php echo admin_e($i['nom']); ?></td>
-              <td><?php echo admin_e($i['prenom']); ?></td>
-              <td class="email-cell"><?php echo admin_e($i['email']); ?></td>
-              <td><?php echo admin_e($i['telephone']); ?></td>
-              <td><?php echo admin_e($i['nom_salle']); ?></td>
-              <td><?php echo admin_e(eillusion_heure($i['heure_debut'])); ?></td>
-              <td><span class="status-valid">Validée</span></td>
+              <td><?php echo admin_e($inscrit['nom']); ?></td>
+              <td><?php echo admin_e($inscrit['prenom']); ?></td>
+              <td class="email-cell"><?php echo admin_e($inscrit['email']); ?></td>
+              <td><?php echo admin_e($inscrit['telephone']); ?></td>
+              <td><?php echo admin_e($inscrit['nom_salle']); ?></td>
+              <td><?php echo admin_e(eillusion_heure($inscrit['heure_debut'])); ?></td>
+              <td><span class="status-valid">Valid&eacute;e</span></td>
+
               <td>
                 <div class="btn-row">
                   <a class="admin-pill" href="inscrits.php">Modifier</a>
+
                   <form action="inscrits.php" method="post" onsubmit="return confirm('Annuler cette inscription ?');">
-                    <input type="hidden" name="id_inscription" value="<?php echo (int) $i['id_inscription']; ?>">
+                    <input type="hidden" name="id_inscription" value="<?php echo (int) $inscrit['id_inscription']; ?>">
                     <button class="admin-danger" type="submit">Annuler</button>
                   </form>
                 </div>
