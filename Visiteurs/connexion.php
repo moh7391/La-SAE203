@@ -10,7 +10,7 @@ if ($_SERVER['SERVER_NAME'] == "localhost" || $_SERVER['SERVER_NAME'] == "127.0.
     $BASE = "203";
 } else {
     // En ligne (serveur OVH)
-    $SERVEUR = "https://mmi-agences.univ-savoie.fr";
+    $SERVEUR = "localhost";
     $UTILISATEUR = "jacqluca";
     $MOTDEPASSE = "IoneUééT03122007:/*";
     $BASE = "jacqluca";

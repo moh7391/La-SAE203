@@ -9,11 +9,11 @@ if ($_SERVER['SERVER_NAME'] == "localhost" || $_SERVER['SERVER_NAME'] == "127.0.
     $MOTDEPASSE = "";
     $BASE = "203";
 } else {
-    // En ligne (serveur OVH)
-    $SERVEUR = "ijtebowcompte17.mysql.db";
-    $UTILISATEUR = "ijtebowcompte17";
-    $MOTDEPASSE = "62nv2rXP2026";
-    $BASE = "ijtebowcompte17";
+    // En ligne (serveur mmi-agences)
+    $SERVEUR = "localhost";
+    $UTILISATEUR = "jacqluca";
+    $MOTDEPASSE = "IoneUééT03122007:/*";
+    $BASE = "jacqluca";
 }
 
 $CONNEXION = mysqli_connect($SERVEUR, $UTILISATEUR, $MOTDEPASSE, $BASE);
